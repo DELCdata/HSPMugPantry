@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELC Hospitality Pantry</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#EEF1F7;color:#1f2937;min-height:100vh}
+#nav{background:#1B3254;color:#fff;display:flex;align-items:center;flex-wrap:wrap;padding:0 12px;min-height:50px;gap:3px;position:sticky;top:0;z-index:50}
+.brand{font-weight:700;font-size:15px;margin-right:10px;white-space:nowrap}
+.nb{padding:6px 9px;border:none;background:transparent;color:#fff;cursor:pointer;border-radius:5px;font-size:12px;white-space:nowrap}
+.nb:hover{background:rgba(255,255,255,.1)}
+.nb.active{background:rgba(255,255,255,.22);font-weight:700}
+.nspacer{flex:1}
+#wrap{padding:14px;max-width:1200px;margin:0 auto}
+.card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px}
+.btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:5px}
+.btn-navy{background:#1B3254;color:#fff}.btn-navy:hover{background:#122540}
+.btn-gold{background:#C8973A;color:#fff}.btn-gold:hover{background:#b07d2e}
+.btn-sec{background:#e5e7eb;color:#1f2937}.btn-sec:hover{background:#d1d5db}
+.btn-red{background:#dc2626;color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-sm{padding:4px 10px;font-size:11px}
+.lbl{font-size:12px;font-weight:600;color:#6b7280;margin-bottom:3px;display:block}
+.inp,.sel{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff;color:#1f2937}
+.inp:focus,.sel:focus{outline:2px solid #1B3254;border-color:#1B3254}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg .full{grid-column:1/-1}
+.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.tbl th{padding:8px 10px;text-align:left;background:#f8fafc;font-weight:600;font-size:12px;border-bottom:1px solid #e5e7eb}
+.tbl td{padding:7px 10px;border-bottom:1px solid #f0f4f8;font-size:13px;vertical-align:middle}
+.tbl tr:hover td{background:#f9fafb}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.scard{background:#fff;border-radius:8px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer}
+.snum{font-size:22px;font-weight:700;color:#1B3254}
+.slbl{font-size:11px;color:#6b7280;margin-top:2px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:16px}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.pt{font-size:20px;font-weight:700;color:#1B3254}
+.fr{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar{background:#e5e7eb;border-radius:4px;height:6px;margin-top:3px}
+.barfill{height:6px;border-radius:4px}
+.qty-out{color:#dc2626;font-weight:700}
+.qty-low{color:#d97706;font-weight:700}
+.qty-ok{font-weight:600;color:#1B3254}
+.lbg{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1B3254}
+.lcard{background:#fff;border-radius:12px;padding:32px;width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.mtitle{font-weight:700;font-size:16px;color:#1B3254;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+#toast{position:fixed;bottom:20px;right:20px;z-index:300;display:none;padding:12px 18px;background:#1B3254;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.sdrop{border:1px solid #d1d5db;border-radius:6px;background:#fff;max-height:200px;overflow-y:auto;margin-top:2px}
+.sdrop-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f4f8;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.sdrop-item:hover{background:#f3f4f6}
+@media(max-width:600px){.fg{grid-template-columns:1fr}.sgrid{grid-template-columns:1fr 1fr}.pgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<script>
+// ════════════════════════════════════════════
+// CONFIG — paste your Supabase anon key below
+// ════════════════════════════════════════════
+const SUPA_URL = 'https://hmkyzdivvkxwlagnjfeu.supabase.co';
+const SUPA_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const APP_PASS = 'Delc.1200!';
+const LOW_QTY  = 3;
+
+const PANTRIES = {
+  kitchen:     {label:'Kitchen Pantry',    icon:'🍽️',color:'#d97706',bg:'#fef3c7',cats:['Food','Beverages','Condiments','Snacks','Dairy','Dry Goods','Frozen','Produce','Other']},
+  mug:         {label:'Mug Pantry',         icon:'☕', color:'#7c3aed',bg:'#ede9fe',cats:['Syrups','Espresso Pods','Coffee','Tea','Creamers','Sweeteners','Other']},
+  hospitality: {label:'Hospitality Closet',icon:'🗄️',color:'#0284c7',bg:'#e0f2fe',cats:['Napkins','Paper Towels','Cups','Plates','Utensils','Bags','Cleaning Supplies','Other']}
+};
+const REASONS = ['Used at Event','Spoiled/Expired','Damaged','Correction','Found','Restocked','Other'];
+const PAGES   = [
+  {id:'dashboard',icon:'📊',label:'Dashboard'},
+  {id:'inventory',icon:'📦',label:'Inventory'},
+  {id:'receive',  icon:'📥',label:'Receive'},
+  {id:'dispense', icon:'🧾',label:'Dispense'},
+  {id:'events',   icon:'🎉',label:'Events'},
+  {id:'audit',    icon:'🔍',label:'Audit'},
+  {id:'reports',  icon:'📋',label:'Reports'},
+  {id:'settings', icon:'⚙️', label:'Settings'}
+];
+
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+let S = {
+  op:'', page:'dashboard',
+  inv:[], events:[], receives:[], dispenses:[], adjustments:[],
+  recLines:[], recPantry:'kitchen', recNotes:'',
+  dspLines:[], dspEventId:'', dspPantry:'', dspNotes:'',
+  auditCounts:{}, auditPantry:'',
+  invFilt:{q:'',pantry:'',cat:''},
+  rptFilt:{tab:'dispenses',event:'',pantry:'',op:''},
+};
+
+const uid  = () => Math.random().toString(36).slice(2,9);
+const now  = () => new Date().toISOString();
+const fN   = n  => parseFloat(n)||0;
+const f2   = n  => fN(n).toFixed(2);
+const f$   = n  => `$${fN(n).toFixed(2)}`;
+const fD   = d  => d ? new Date(d).toLocaleDateString() : '—';
+const esc  = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const qtot = i  => fN(i.qtyNew)+fN(i.qtyOpen);
+const qcls = q  => q===0?'qty-out':q<=LOW_QTY?'qty-low':'qty-ok';
+
+function pbadge(pk){
+  const p=PANTRIES[pk]; if(!p) return '';
+  return `<span class="badge" style="background:${p.bg};color:${p.color}">${p.icon} ${p.label}</span>`;
+}
+function toast(msg,ms=2600){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none',ms);
+}
+function setContent(html){ document.getElementById('wrap').innerHTML=html; }
+
+const fromDb={
+  inv: r=>({id:r.id,created:r.created,upc:r.upc||'',name:r.name,brand:r.brand||'',size:r.size||'',pantry:r.pantry,category:r.category,qtyNew:fN(r.qty_new),qtyOpen:fN(r.qty_open),unit:r.unit||'',unitCost:fN(r.unit_cost),auditOnly:!!r.audit_only,notes:r.notes||''}),
+  ev:  r=>({id:r.id,created:r.created,createdBy:r.created_by||'',name:r.name,date:r.date||'',location:r.location||'',attendees:r.attendees||'',notes:r.notes||''}),
+  rec: r=>({id:r.id,date:r.date,operator:r.operator,pantry:r.pantry,notes:r.notes||'',lines:r.lines||[]}),
+  dsp: r=>({id:r.id,date:r.date,operator:r.operator,eventId:r.event_id||null,eventName:r.event_name||'',notes:r.notes||'',lines:r.lines||[]}),
+  adj: r=>({id:r.id,inventoryId:r.inventory_id||null,itemName:r.item_name||'',type:r.type,qtyNew:fN(r.qty_new),qtyOpen:fN(r.qty_open),varNew:r.var_new,varOpen:r.var_open,reason:r.reason||'',notes:r.notes||'',operator:r.operator,date:r.date}),
+};
+const toDb={
+  inv: i=>({id:i.id,created:i.created,updated_at:now(),upc:i.upc||'',name:i.name,brand:i.brand||'',size:i.size||'',pantry:i.pantry,category:i.category,qty_new:fN(i.qtyNew),qty_open:fN(i.qtyOpen),unit:i.unit||'',unit_cost:fN(i.unitCost),audit_only:!!i.auditOnly,notes:i.notes||''}),
+  ev:  e=>({id:e.id,created:e.created,created_by:e.createdBy||'',name:e.name,date:e.date||'',location:e.location||'',attendees:e.attendees||'',notes:e.notes||''}),
+  rec: r=>({id:r.id,date:r.date,operator:r.operator,pantry:r.pantry,notes:r.notes||'',lines:r.lines}),
+  dsp: d=>({id:d.id,date:d.date,operator:d.operator,event_id:d.eventId||null,event_name:d.eventName||'',notes:d.notes||'',lines:d.lines}),
+  adj: a=>({id:a.id,inventory_id:a.inventoryId||null,item_name:a.itemName||'',type:a.type,qty_new:fN(a.qtyNew),qty_open:fN(a.qtyOpen),var_new:a.varNew??null,var_open:a.varOpen??null,reason:a.reason||'',notes:a.notes||'',operator:a.operator,date:a.date}),
+};
+
+async function loadAll(){
+  const [a,b,c,d,e]=await Promise.all([
+    sb.from('inventory').select('*').order('name'),
+    sb.from('events').select('*').order('created'),
+    sb.from('receives').select('*').order('date'),
+    sb.from('dispenses').select('*').order('date'),
+    sb.from('adjustments').select('*').order('date'),
+  ]);
+  S.inv         = (a.data||[]).map(fromDb.inv);
+  S.events      = (b.data||[]).map(fromDb.ev);
+  S.receives    = (c.data||[]).map(fromDb.rec);
+  S.dispenses   = (d.data||[]).map(fromDb.dsp);
+  S.adjustments = (e.data||[]).map(fromDb.adj);
+}
+
+const upcCache={};
+async function lookupUPC(upc,statusId){
+  const key=String(upc).replace(/\D/g,'').trim(); if(!key) return null;
+  const setSt=m=>{const el=document.getElementById(statusId);if(el)el.textContent=m;};
+  if(upcCache[key]){setSt('✓ Cached — '+upcCache[key].name);return upcCache[key];}
+  setSt('🔍 Searching…');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:`Fetch https://world.openfoodfacts.org/api/v0/product/${key}.json and extract product_name, brands, quantity. Reply ONLY with JSON: {"name":"...","brand":"...","size":"..."}. If not found reply: null`}]})});
+    const data=await res.json();
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').replace(/```json|```/g,'').trim();
+    if(txt&&!/^null/i.test(txt)){
+      try{
+        const p=JSON.parse((txt.match(/\{[\s\S]*\}/)||[txt])[0]);
+        if(p?.name){upcCache[key]=p;setSt('✓ Found — '+p.name);return p;}
+      }catch(e){}
+    }
+  }catch(e){}
+  setSt('❌ Not found — enter details below');
+  return null;
+}
+
+function renderLogin(){
+  document.getElementById('root').innerHTML=`
+  <div class="lbg">
+    <div class="lcard">
+      <div style="font-size:50px;margin-bottom:6px">☕</div>
+      <div style="font-size:22px;font-weight:700;color:#1B3254">DELC Hospitality</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:20px">Hospitality &amp; Service Team Pantry</div>
+      <label class="lbl">Account ID (e.g. ddetrich)</label>
+      <input id="lu" class="inp" style="text-align:center;margin-bottom:10px" placeholder="firstinitiallastname" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('lp').focus()">
+      <label class="lbl">Password</label>
+      <input id="lp" type="password" class="inp" style="text-align:center;margin-bottom:6px" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div id="lerr" style="color:#dc2626;font-size:12px;min-height:18px;margin-bottom:6px"></div>
+      <button class="btn btn-navy" style="width:100%;padding:10px;justify-content:center" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>`;
+}
+
+async function doLogin(){
+  const u=document.getElementById('lu').value.trim().toLowerCase();
+  const p=document.getElementById('lp').value;
+  const err=document.getElementById('lerr');
+  if(!/^[a-z]{2,20}$/.test(u)){err.textContent='Format: first initial + last name (e.g. ddetrich)';return;}
+  if(p!==APP_PASS){err.textContent='Incorrect password';return;}
+  S.op=u;
+  document.getElementById('root').innerHTML=`
+    <div id="nav" style="background:#1B3254;color:#fff;display:flex;align-items:center;flex-wrap:wrap;padding:0 12px;min-height:50px;gap:3px;position:sticky;top:0;z-index:50"></div>
+    <div id="wrap" style="padding:14px;max-width:1200px;margin:0 auto"><div style="text-align:center;padding:40px;color:#6b7280">Loading…</div></div>`;
+  await loadAll();
+  nav('dashboard');
+}
+
+function doLogout(){S.op='';renderLogin();}
+
+function renderNav(){
+  const el=document.getElementById('nav'); if(!el) return;
+  el.innerHTML=`<span class="brand">☕ DELC Hospitality</span>`+
+    PAGES.map(p=>`<button class="nb${S.page===p.id?' active':''}" onclick="nav('${p.id}')">${p.icon} ${p.label}</button>`).join('')+
+    `<span class="nspacer"></span>
+     <span style="font-size:12px;opacity:.8">👤 ${esc(S.op)}</span>
+     <button class="nb" style="margin-left:6px;border:1px solid rgba(255,255,255,.3)" onclick="doLogout()">Sign Out</button>`;
+}
+
+async function nav(page){
+  S.page=page; renderNav();
+  setContent('<div style="text-align:center;padding:40px;color:#6b7280">Loading…</div>');
+  const fns={dashboard:pgDashboard,inventory:pgInventory,receive:pgReceive,dispense:pgDispense,events:pgEvents,audit:pgAudit,reports:pgReports,settings:pgSettings};
+  setContent(fns[page]?fns[page]():'');
+}
+
+// ── DASHBOARD ──────────────────────────────────────
+function pgDashboard(){
+  const totVal=S.inv.reduce((a,i)=>a+qtot(i)*fN(i.unitCost),0);
+  const stats=`<div class="sgrid">
+    <div class="scard" onclick="nav('inventory')"><div class="snum">${S.inv.length}</div><div class="slbl">📦 Products</div></div>
+    <div class="scard" onclick="nav('inventory')"><div class="snum">${f$(totVal)}</div><div class="slbl">💰 Est. Value</div></div>
+    <div class="scard" onclick="nav('events')"><div class="snum">${S.events.length}</div><div class="slbl">🎉 Events</div></div>
+    <div class="scard" onclick="nav('dispense')"><div class="snum">${S.dispenses.length}</div><div class="slbl">🧾 Dispenses</div></div>
+  </div>`;
+  const pantryCards=Object.entries(PANTRIES).map(([pk,pv])=>{
+    const items=S.inv.filter(i=>i.pantry===pk);
+    const tq=items.reduce((a,i)=>a+qtot(i),0);
+    const tv=items.reduce((a,i)=>a+qtot(i)*fN(i.unitCost),0);
+    const out=items.filter(i=>qtot(i)===0).length;
+    const low=items.filter(i=>qtot(i)>0&&qtot(i)<=LOW_QTY).length;
+    const cats={};items.forEach(i=>{const q=qtot(i);if(q>0)cats[i.category]=(cats[i.category]||0)+q;});
+    const bars=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,q])=>`
+      <div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span>${esc(c)}</span><span style="color:${pv.color};font-weight:600">${q.toFixed(2)}</span></div>
+        <div class="bar"><div class="barfill" style="background:${pv.color};opacity:.75;width:${tq>0?(q/tq*100).toFixed(1):0}%"></div></div>
+      </div>`).join('');
+    return `<div class="card" style="border-top:3px solid ${pv.color};margin:0">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:28px">${pv.icon}</span>
+          <div><div style="font-weight:700;color:${pv.color}">${pv.label}</div><div style="font-size:11px;color:#6b7280">${items.length} products</div></div>
+        </div>
+        <div style="text-align:right"><div style="font-size:17px;font-weight:700;color:${pv.color}">${f$(tv)}</div><div style="font-size:11px;color:#6b7280">${tq.toFixed(2)} units</div></div>
+      </div>
+      ${out?`<div style="font-size:11px;color:#dc2626;margin-bottom:3px">❌ ${out} out of stock</div>`:''}
+      ${low?`<div style="font-size:11px;color:#d97706;margin-bottom:6px">⚡ ${low} running low</div>`:''}
+      ${bars||'<p style="font-size:12px;color:#6b7280">No stock yet</p>'}
+    </div>`;
+  }).join('');
+  const recRows=S.receives.slice(-5).reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:12px">None yet</td></tr>';
+  const evRows=S.events.slice(-5).reverse().map(e=>`<tr><td>${e.date?fD(e.date+'T12:00:00'):'TBD'}</td><td>${esc(e.name)}</td><td>${esc(e.location||'—')}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:#6b7280;padding:12px">None yet</td></tr>';
+  return `<div class="ph"><div class="pt">📊 Dashboard</div></div>
+    ${stats}
+    <div style="font-size:16px;font-weight:700;color:#1B3254;margin-bottom:10px">Pantry Overview</div>
+    <div class="pgrid">${pantryCards}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card"><div style="font-weight:700;color:#1B3254;margin-bottom:10px">📥 Recent Receives</div>
+        <table class="tbl"><thead><tr><th>Date</th><th>Pantry</th><th>Lines</th><th>By</th></tr></thead><tbody>${recRows}</tbody></table></div>
+      <div class="card"><div style="font-weight:700;color:#1B3254;margin-bottom:10px">🎉 Events</div>
+        <table class="tbl"><thead><tr><th>Date</th><th>Event</th><th>Location</th></tr></thead><tbody>${evRows}</tbody></table></div>
+    </div>`;
+}
+
+// ── INVENTORY ──────────────────────────────────────
+function pgInventory(){
+  const f=S.invFilt;
+  const items=S.inv.filter(i=>{
+    if(f.pantry&&i.pantry!==f.pantry)return false;
+    if(f.cat&&i.category!==f.cat)return false;
+    if(f.q){const q=f.q.toLowerCase();return i.name.toLowerCase().includes(q)||(i.brand||'').toLowerCase().includes(q)||(i.upc||'').includes(f.q);}
+    return true;
+  });
+  const totVal=items.reduce((a,i)=>a+qtot(i)*fN(i.unitCost),0);
+  const availCats=f.pantry?PANTRIES[f.pantry].cats:[...new Set(Object.values(PANTRIES).flatMap(p=>p.cats))];
+  const pantryOpts=Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${f.pantry===k?' selected':''}>${v.icon} ${v.label}</option>`).join('');
+  const catOpts=availCats.map(c=>`<option${f.cat===c?' selected':''}>${esc(c)}</option>`).join('');
+  const rows=items.map(i=>{
+    const t=qtot(i),v=t*fN(i.unitCost),p=PANTRIES[i.pantry];
+    return `<tr>
+      <td><div style="font-weight:600">${esc(i.name)}</div>${i.brand?`<div style="font-size:11px;color:#6b7280">${esc(i.brand)}${i.size?' · '+esc(i.size):''}</div>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px">AUDIT ONLY</span>':''}</td>
+      <td>${pbadge(i.pantry)}</td><td>${esc(i.category)}</td>
+      <td><span style="color:#1B3254;font-weight:600">${f2(i.qtyNew)}</span></td>
+      <td><span style="color:${p?.color||'#1B3254'};font-weight:600">${f2(i.qtyOpen)}</span></td>
+      <td><span class="${qcls(t)}">${f2(t)}</span></td>
+      <td>${fN(i.unitCost)>0?f$(i.unitCost):'—'}</td>
+      <td>${v>0?`<span style="color:${p?.color};font-weight:600">${f$(v)}</span>`:'—'}</td>
+      <td><div class="fr">
+        <button class="btn btn-navy btn-sm" onclick="showAdjust('${i.id}')">Adjust</button>
+        <button class="btn btn-sec btn-sm" onclick="showInvEdit('${i.id}')">Edit</button>
+        <button class="btn btn-red btn-sm" onclick="delItem('${i.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:#6b7280">No items match</td></tr>';
+  return `<div class="ph"><div class="pt">📦 Inventory <span style="font-size:14px;font-weight:400;color:#6b7280">Est. ${f$(totVal)}</span></div>
+    <button class="btn btn-navy" onclick="showInvAdd()">+ Add Product</button></div>
+    <div class="card" style="padding:10px"><div class="fr">
+      <input class="inp" style="flex:1;max-width:220px" placeholder="Name / brand / UPC…" value="${esc(f.q)}" oninput="S.invFilt.q=this.value;setContent(pgInventory())">
+      <select class="sel" style="max-width:170px" onchange="S.invFilt.pantry=this.value;S.invFilt.cat='';setContent(pgInventory())"><option value="">All Pantries</option>${pantryOpts}</select>
+      <select class="sel" style="max-width:150px" onchange="S.invFilt.cat=this.value;setContent(pgInventory())"><option value="">All Categories</option>${catOpts}</select>
+      ${f.q||f.pantry||f.cat?`<button class="btn btn-sec" onclick="S.invFilt={q:'',pantry:'',cat:''};setContent(pgInventory())">Clear</button>`:''}
+    </div></div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Product</th><th>Pantry</th><th>Category</th><th>New</th><th>Open</th><th>Total</th><th>Unit $</th><th>Value</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function getCatOpts(pk,selected){return(PANTRIES[pk]?.cats||[]).map(c=>`<option${c===selected?' selected':''}>${esc(c)}</option>`).join('');}
+function getPantryOpts(selected){return Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${k===selected?' selected':''}>${v.icon} ${v.label}</option>`).join('');}
+
+function showInvAdd(){
+  showModal('Add Product',`
+    <div id="upc-st" style="font-size:12px;color:#C8973A;min-height:16px;margin-bottom:8px"></div>
+    <div class="fr" style="margin-bottom:10px">
+      <input id="m-upc" class="inp" style="flex:1" placeholder="UPC barcode (optional)" onkeydown="if(event.key==='Enter')doUPC()">
+      <button class="btn btn-gold btn-sm" onclick="doUPC()">🔍 Lookup</button>
+    </div>
+    <div class="fg">
+      <div class="full"><label class="lbl">Product Name *</label><input id="m-name" class="inp" placeholder="Required"></div>
+      <div><label class="lbl">Brand</label><input id="m-brand" class="inp"></div>
+      <div><label class="lbl">Size / Weight</label><input id="m-size" class="inp"></div>
+      <div><label class="lbl">Pantry</label><select id="m-pantry" class="sel" onchange="document.getElementById('m-cat').innerHTML=getCatOpts(this.value,'')">${getPantryOpts('kitchen')}</select></div>
+      <div><label class="lbl">Category</label><select id="m-cat" class="sel">${getCatOpts('kitchen','')}</select></div>
+      <div><label class="lbl">Qty New (sealed)</label><input id="m-qn" type="number" step="0.01" min="0" value="0" class="inp"></div>
+      <div><label class="lbl">Qty Open (in use)</label><input id="m-qo" type="number" step="0.01" min="0" value="0" class="inp"></div>
+      <div><label class="lbl">Unit (bottle, bag…)</label><input id="m-unit" class="inp"></div>
+      <div><label class="lbl">Unit Cost ($)</label><input id="m-cost" type="number" step="0.01" min="0" value="0" class="inp"></div>
+      <div class="full"><label class="lbl" style="display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:400"><input type="checkbox" id="m-audit" style="width:15px;height:15px"> Audit-only (updated via Audit tab only)</label></div>
+      <div class="full"><label class="lbl">Notes</label><input id="m-notes" class="inp"></div>
+    </div>`,
+    [{label:'💾 Save',cls:'btn-navy',fn:'saveInvAdd()'}]);
+}
+
+async function doUPC(){
+  const r=await lookupUPC(document.getElementById('m-upc')?.value,'upc-st');
+  if(r){
+    if(r.name&&document.getElementById('m-name'))document.getElementById('m-name').value=r.name;
+    if(r.brand&&document.getElementById('m-brand'))document.getElementById('m-brand').value=r.brand;
+    if(r.size&&document.getElementById('m-size'))document.getElementById('m-size').value=r.size;
+  }
+}
+
+async function saveInvAdd(){
+  const name=document.getElementById('m-name')?.value?.trim();if(!name){alert('Name required');return;}
+  const upc=document.getElementById('m-upc')?.value?.trim()||'';
+  if(upc&&S.inv.find(i=>i.upc===upc)){alert('UPC already exists');return;}
+  const pk=document.getElementById('m-pantry')?.value||'kitchen';
+  const item={id:uid(),created:now(),upc,name,brand:document.getElementById('m-brand')?.value?.trim()||'',size:document.getElementById('m-size')?.value?.trim()||'',pantry:pk,category:document.getElementById('m-cat')?.value||PANTRIES[pk].cats[0],qtyNew:fN(document.getElementById('m-qn')?.value),qtyOpen:fN(document.getElementById('m-qo')?.value),unit:document.getElementById('m-unit')?.value?.trim()||'',unitCost:fN(document.getElementById('m-cost')?.value),auditOnly:document.getElementById('m-audit')?.checked||false,notes:document.getElementById('m-notes')?.value?.trim()||''};
+  const {error}=await sb.from('inventory').insert(toDb.inv(item));
+  if(error){alert('Save failed: '+error.message);return;}
+  S.inv.push(item);S.inv.sort((a,b)=>a.name.localeCompare(b.name));
+  closeModal();nav('inventory');toast('✅ Product added!');
+}
+
+function showInvEdit(id){
+  const i=S.inv.find(x=>x.id===id);if(!i)return;
+  showModal('Edit Product',`
+    <div class="fg">
+      <div class="full"><label class="lbl">Product Name *</label><input id="m-name" class="inp" value="${esc(i.name)}"></div>
+      <div><label class="lbl">Brand</label><input id="m-brand" class="inp" value="${esc(i.brand)}"></div>
+      <div><label class="lbl">Size</label><input id="m-size" class="inp" value="${esc(i.size)}"></div>
+      <div><label class="lbl">Pantry</label><select id="m-pantry" class="sel" onchange="document.getElementById('m-cat').innerHTML=getCatOpts(this.value,'')">${getPantryOpts(i.pantry)}</select></div>
+      <div><label class="lbl">Category</label><select id="m-cat" class="sel">${getCatOpts(i.pantry,i.category)}</select></div>
+      <div><label class="lbl">Unit</label><input id="m-unit" class="inp" value="${esc(i.unit)}"></div>
+      <div><label class="lbl">Unit Cost ($)</label><input id="m-cost" type="number" step="0.01" min="0" value="${fN(i.unitCost).toFixed(2)}" class="inp"></div>
+      <div class="full"><label class="lbl" style="display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:400"><input type="checkbox" id="m-audit"${i.auditOnly?' checked':''} style="width:15px;height:15px"> Audit-only</label></div>
+      <div class="full"><label class="lbl">Notes</label><input id="m-notes" class="inp" value="${esc(i.notes)}"></div>
+    </div>`,
+    [{label:'💾 Save',cls:'btn-navy',fn:`saveInvEdit('${id}')`}]);
+}
+
+async function saveInvEdit(id){
+  const name=document.getElementById('m-name')?.value?.trim();if(!name){alert('Name required');return;}
+  const pk=document.getElementById('m-pantry')?.value;
+  const idx=S.inv.findIndex(i=>i.id===id);
+  const updated={...S.inv[idx],name,brand:document.getElementById('m-brand')?.value?.trim()||'',size:document.getElementById('m-size')?.value?.trim()||'',pantry:pk,category:document.getElementById('m-cat')?.value||PANTRIES[pk].cats[0],unit:document.getElementById('m-unit')?.value?.trim()||'',unitCost:fN(document.getElementById('m-cost')?.value),auditOnly:document.getElementById('m-audit')?.checked||false,notes:document.getElementById('m-notes')?.value?.trim()||''};
+  const {error}=await sb.from('inventory').upsert(toDb.inv(updated));
+  if(error){alert('Save failed: '+error.message);return;}
+  S.inv[idx]=updated;closeModal();nav('inventory');toast('✅ Updated!');
+}
+
+function showAdjust(id){
+  const i=S.inv.find(x=>x.id===id);if(!i)return;
+  showModal(`Adjust — ${esc(i.name)}`,`
+    <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Current: <strong>New ${f2(i.qtyNew)}</strong> · <strong>Open ${f2(i.qtyOpen)}</strong> · Total ${f2(qtot(i))}</p>
+    <div class="fg">
+      <div class="full"><label class="lbl">Type</label><select id="m-at" class="sel"><option value="add">Add to</option><option value="remove">Remove from</option><option value="set">Set to</option></select></div>
+      <div><label class="lbl">Qty New</label><input id="m-an" type="number" step="0.01" min="0" value="0" class="inp"></div>
+      <div><label class="lbl">Qty Open</label><input id="m-ao" type="number" step="0.01" min="0" value="0" class="inp"></div>
+      <div class="full"><label class="lbl">Reason</label><select id="m-ar" class="sel">${REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
+      <div class="full"><label class="lbl">Notes</label><input id="m-anotes" class="inp"></div>
+    </div>`,
+    [{label:'Apply',cls:'btn-navy',fn:`saveAdjust('${id}')`}]);
+}
+
+async function saveAdjust(id){
+  const idx=S.inv.findIndex(i=>i.id===id);const item=S.inv[idx];
+  const type=document.getElementById('m-at')?.value;
+  const aN=fN(document.getElementById('m-an')?.value),aO=fN(document.getElementById('m-ao')?.value);
+  let nN=fN(item.qtyNew),nO=fN(item.qtyOpen);
+  if(type==='add'){nN+=aN;nO+=aO;}else if(type==='remove'){nN=Math.max(0,nN-aN);nO=Math.max(0,nO-aO);}else{nN=aN;nO=aO;}
+  const updated={...item,qtyNew:nN,qtyOpen:nO};
+  const adj={id:uid(),inventoryId:id,itemName:item.name,type,qtyNew:aN,qtyOpen:aO,varNew:nN-fN(item.qtyNew),varOpen:nO-fN(item.qtyOpen),reason:document.getElementById('m-ar')?.value||'',notes:document.getElementById('m-anotes')?.value||'',operator:S.op,date:now()};
+  const [r1,r2]=await Promise.all([sb.from('inventory').upsert(toDb.inv(updated)),sb.from('adjustments').insert(toDb.adj(adj))]);
+  if(r1.error){alert('Save failed: '+r1.error.message);return;}
+  S.inv[idx]=updated;S.adjustments.push(adj);
+  closeModal();nav('inventory');toast('✅ Adjustment saved!');
+}
+
+async function delItem(id){
+  if(!confirm('Delete this product? Cannot be undone.'))return;
+  const {error}=await sb.from('inventory').delete().eq('id',id);
+  if(error){alert('Delete failed: '+error.message);return;}
+  S.inv=S.inv.filter(i=>i.id!==id);nav('inventory');toast('🗑️ Deleted');
+}
+
+// ── RECEIVE ────────────────────────────────────────
+function pgReceive(){
+  const pk=S.recPantry||'kitchen';
+  const pantryBtns=Object.entries(PANTRIES).map(([k,v])=>`<button onclick="S.recPantry='${k}';setContent(pgReceive())" style="padding:7px 14px;border-radius:6px;border:2px solid ${pk===k?v.color:'#d1d5db'};cursor:pointer;font-weight:${pk===k?700:400};background:${pk===k?v.bg:'#fff'};color:${pk===k?v.color:'#1f2937'};font-size:13px">${v.icon} ${v.label}</button>`).join('');
+  if(!S.recLines)S.recLines=[];
+  const lineRows=S.recLines.map((l,idx)=>`
+    <tr>
+      <td>${l.isNew?'<span class="badge" style="background:#fef3c7;color:#92400e">NEW</span> ':''}
+        <strong>${esc(l.name||'(unnamed)')}</strong>${l.brand?` <span style="color:#6b7280">· ${esc(l.brand)}</span>`:''}
+        ${l.isNew?`<div style="margin-top:4px;display:flex;gap:4px">
+          <input class="inp" style="max-width:140px;padding:3px 6px;font-size:11px" value="${esc(l.name)}" placeholder="Product name" onchange="S.recLines[${idx}].name=this.value">
+          <select class="sel" style="max-width:110px;padding:3px 6px;font-size:11px" onchange="S.recLines[${idx}].category=this.value">${getCatOpts(l.pantry,l.category)}</select>
+        </div>`:''}
+      </td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:72px;padding:3px 6px" value="${l.qtyNew}" onchange="S.recLines[${idx}].qtyNew=parseFloat(this.value)||0"></td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:72px;padding:3px 6px" value="${l.qtyOpen}" onchange="S.recLines[${idx}].qtyOpen=parseFloat(this.value)||0"></td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:76px;padding:3px 6px" placeholder="0.00" value="${l.unitCost||0}" onchange="S.recLines[${idx}].unitCost=parseFloat(this.value)||0"></td>
+      <td><button onclick="S.recLines.splice(${idx},1);setContent(pgReceive())" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:16px">✕</button></td>
+    </tr>`).join('');
+  const linesSection=S.recLines.length?`
+    <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#6b7280">Product</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Qty New</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Qty Open</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Unit Cost</th>
+        <th></th>
+      </tr></thead>
+      <tbody>${lineRows}</tbody>
+    </table>
+    <div style="margin-top:10px"><label class="lbl">Batch Notes</label><input class="inp" value="${esc(S.recNotes||'')}" placeholder="Delivery, supplier…" onchange="S.recNotes=this.value"></div>
+    <div class="fr" style="margin-top:10px">
+      <button class="btn btn-navy" onclick="commitReceive()">✅ Commit Batch (${S.recLines.length} lines)</button>
+      <button class="btn btn-sec" onclick="S.recLines=[];setContent(pgReceive())">Clear</button>
+    </div>`:'<p style="text-align:center;padding:18px 0;color:#6b7280;font-size:13px">Select a pantry then scan or search to add items</p>';
+  return `<div class="ph"><div class="pt">📥 Receive Stock</div></div>
+    <div class="card">
+      <div style="margin-bottom:12px"><label class="lbl">Pantry</label><div class="fr">${pantryBtns}</div></div>
+      <div class="fr" style="margin-bottom:8px">
+        <input id="rec-upc" class="inp" style="flex:1" placeholder="Scan UPC here…" onkeydown="if(event.key==='Enter')addRecUPC()">
+        <button class="btn btn-navy" onclick="addRecUPC()">Add UPC</button>
+      </div>
+      <div id="upc-st2" style="font-size:12px;color:#C8973A;min-height:16px;margin-bottom:6px"></div>
+      <input class="inp" placeholder="Or search by product name…" oninput="showRecSearch(this.value)" style="margin-bottom:4px">
+      <div id="rec-drop"></div>
+      ${linesSection}
+    </div>`;
+}
+
+async function addRecUPC(){
+  const upc=document.getElementById('rec-upc')?.value?.trim();if(!upc)return;
+  const pk=S.recPantry||'kitchen';
+  if(!S.recLines)S.recLines=[];
+  const ex=S.inv.find(i=>i.upc===upc);
+  if(ex){
+    const li=S.recLines.find(l=>l.inventoryId===ex.id);
+    if(li)li.qtyNew=fN(li.qtyNew)+1;
+    else S.recLines.push({id:uid(),inventoryId:ex.id,name:ex.name,brand:ex.brand,pantry:ex.pantry,category:ex.category,qtyNew:1,qtyOpen:0,unitCost:ex.unitCost||0,isNew:false});
+  }else{
+    const found=await lookupUPC(upc,'upc-st2');
+    S.recLines.push({id:uid(),inventoryId:null,upc,name:found?.name||'',brand:found?.brand||'',size:found?.size||'',pantry:pk,category:PANTRIES[pk].cats[0],qtyNew:1,qtyOpen:0,unitCost:0,isNew:true});
+  }
+  document.getElementById('rec-upc').value='';
+  setContent(pgReceive());
+}
+
+function showRecSearch(q){
+  const el=document.getElementById('rec-drop');if(!el||!q.trim()){if(el)el.innerHTML='';return;}
+  const pk=S.recPantry||'kitchen';
+  const res=S.inv.filter(i=>i.pantry===pk&&(i.name.toLowerCase().includes(q.toLowerCase())||(i.brand||'').toLowerCase().includes(q.toLowerCase()))).slice(0,8);
+  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addRecItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#6b7280">${esc(i.brand)}</span>`:''}</span><span style="color:#6b7280;font-size:11px">${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#6b7280;font-size:13px">No matches</div>')+'</div>';
+}
+
+function addRecItem(id){
+  const item=S.inv.find(i=>i.id===id);if(!item)return;
+  if(!S.recLines)S.recLines=[];
+  const li=S.recLines.find(l=>l.inventoryId===id);
+  if(li)li.qtyNew=fN(li.qtyNew)+1;
+  else S.recLines.push({id:uid(),inventoryId:id,name:item.name,brand:item.brand,pantry:item.pantry,category:item.category,qtyNew:1,qtyOpen:0,unitCost:item.unitCost||0,isNew:false});
+  setContent(pgReceive());
+}
+
+async function commitReceive(){
+  if(!S.recLines?.length)return;
+  const pk=S.recPantry||'kitchen';
+  const invOps=[];
+  S.recLines.forEach(l=>{
+    if(l.inventoryId){
+      const idx=S.inv.findIndex(i=>i.id===l.inventoryId);
+      if(idx>=0){
+        S.inv[idx]={...S.inv[idx],qtyNew:fN(S.inv[idx].qtyNew)+fN(l.qtyNew),qtyOpen:fN(S.inv[idx].qtyOpen)+fN(l.qtyOpen)};
+        if(fN(l.unitCost)>0)S.inv[idx].unitCost=fN(l.unitCost);
+        invOps.push(sb.from('inventory').upsert(toDb.inv(S.inv[idx])));
+      }
+    }else{
+      const ni={id:uid(),created:now(),upc:l.upc||'',name:l.name||'Unknown',brand:l.brand||'',size:l.size||'',pantry:l.pantry,category:l.category,qtyNew:fN(l.qtyNew),qtyOpen:fN(l.qtyOpen),unit:'',unitCost:fN(l.unitCost),auditOnly:false,notes:''};
+      S.inv.push(ni);invOps.push(sb.from('inventory').insert(toDb.inv(ni)));
+    }
+  });
+  const batch={id:uid(),date:now(),operator:S.op,pantry:pk,notes:S.recNotes||'',lines:S.recLines.map(l=>({...l,qtyNew:fN(l.qtyNew),qtyOpen:fN(l.qtyOpen)}))};
+  await Promise.all([...invOps,sb.from('receives').insert(toDb.rec(batch))]);
+  S.receives.push(batch);S.recLines=[];S.recNotes='';
+  toast(`✅ Batch received — ${batch.lines.length} line(s)`);nav('receive');
+}
+
+// ── DISPENSE ───────────────────────────────────────
+function pgDispense(){
+  if(!S.dspLines)S.dspLines=[];
+  const totCost=S.dspLines.reduce((a,l)=>a+fN(l.qty)*fN(l.unitCost),0);
+  const evOpts=S.events.slice().reverse().map(e=>`<option value="${e.id}"${S.dspEventId===e.id?' selected':''}>${esc(e.name)}${e.date?' · '+fD(e.date+'T12:00:00'):''}</option>`).join('');
+  const pkOpts=Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${S.dspPantry===k?' selected':''}>${v.icon} ${v.label}</option>`).join('');
+  const lineRows=S.dspLines.map((l,idx)=>`
+    <tr>
+      <td><strong>${esc(l.name)}</strong>${l.brand?` <span style="color:#6b7280">· ${esc(l.brand)}</span>`:''}</td>
+      <td>${pbadge(l.pantry)}</td>
+      <td style="font-size:11px;color:#6b7280">New:${f2(l.qaN)} Open:${f2(l.qaO)}</td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:72px;padding:3px 6px" value="${l.qty}" onchange="S.dspLines[${idx}].qty=parseFloat(this.value)||0"></td>
+      <td>${fN(l.qty)*fN(l.unitCost)>0?f$(fN(l.qty)*fN(l.unitCost)):'—'}</td>
+      <td><button onclick="S.dspLines.splice(${idx},1);setContent(pgDispense())" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:16px">✕</button></td>
+    </tr>`).join('');
+  const linesSection=S.dspLines.length?`
+    <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb">
+    ${totCost>0?`<div style="text-align:right;font-weight:700;color:#C8973A;margin-bottom:6px">Est. Cost: ${f$(totCost)}</div>`:''}
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#6b7280">Product</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Pantry</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Available</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Qty</th>
+        <th style="font-size:11px;padding:4px;color:#6b7280">Cost</th>
+        <th></th>
+      </tr></thead>
+      <tbody>${lineRows}</tbody>
+    </table>
+    <div style="margin-top:10px"><label class="lbl">Notes</label><input class="inp" value="${esc(S.dspNotes||'')}" onchange="S.dspNotes=this.value"></div>
+    <div class="fr" style="margin-top:10px">
+      <button class="btn btn-navy" onclick="commitDispense()">✅ Confirm Dispense</button>
+      <button class="btn btn-sec" onclick="S.dspLines=[];setContent(pgDispense())">Clear</button>
+    </div>`:'';
+  return `<div class="ph"><div class="pt">🧾 Dispense Stock</div></div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:12px">
+        <div><label class="lbl">Link to Event (optional)</label><select class="sel" onchange="S.dspEventId=this.value"><option value="">— Standalone —</option>${evOpts}</select></div>
+        <div><label class="lbl">Filter Pantry</label><select class="sel" onchange="S.dspPantry=this.value;setContent(pgDispense())"><option value="">All Pantries</option>${pkOpts}</select></div>
+      </div>
+      <input class="inp" placeholder="Search products…" oninput="showDspSearch(this.value)" style="margin-bottom:4px">
+      <div id="dsp-drop"></div>
+      ${S.inv.some(i=>i.auditOnly)?'<p style="font-size:11px;color:#6b7280;margin-top:6px">ℹ️ Audit-only items excluded.</p>':''}
+      ${linesSection}
+    </div>`;
+}
+
+function showDspSearch(q){
+  const el=document.getElementById('dsp-drop');if(!el||!q.trim()){if(el)el.innerHTML='';return;}
+  const res=S.inv.filter(i=>!i.auditOnly&&(!S.dspPantry||i.pantry===S.dspPantry)&&(i.name.toLowerCase().includes(q.toLowerCase())||(i.brand||'').toLowerCase().includes(q.toLowerCase()))).slice(0,8);
+  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addDspItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#6b7280">${esc(i.brand)}</span>`:''} ${pbadge(i.pantry)}</span><span style="color:#6b7280;font-size:11px">Stock:${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#6b7280;font-size:13px">No matches</div>')+'</div>';
+}
+
+function addDspItem(id){
+  const item=S.inv.find(i=>i.id===id);if(!item||item.auditOnly)return;
+  if(!S.dspLines)S.dspLines=[];
+  if(S.dspLines.find(l=>l.inventoryId===id))return;
+  S.dspLines.push({id:uid(),inventoryId:id,name:item.name,brand:item.brand,pantry:item.pantry,unitCost:fN(item.unitCost),qaN:fN(item.qtyNew),qaO:fN(item.qtyOpen),qty:1});
+  setContent(pgDispense());
+}
+
+async function commitDispense(){
+  if(!S.dspLines?.length)return;
+  const ev=S.events.find(e=>e.id===S.dspEventId);
+  const invOps=[];
+  S.dspLines.forEach(l=>{
+    const qty=fN(l.qty);
+    const idx=S.inv.findIndex(i=>i.id===l.inventoryId);if(idx<0)return;
+    const fO=Math.min(fN(S.inv[idx].qtyOpen),qty);
+    const fN2=Math.min(fN(S.inv[idx].qtyNew),qty-fO);
+    S.inv[idx]={...S.inv[idx],qtyOpen:Math.max(0,fN(S.inv[idx].qtyOpen)-fO),qtyNew:Math.max(0,fN(S.inv[idx].qtyNew)-fN2)};
+    invOps.push(sb.from('inventory').upsert(toDb.inv(S.inv[idx])));
+  });
+  const disp={id:uid(),date:now(),operator:S.op,eventId:S.dspEventId||null,eventName:ev?.name||'Standalone',notes:S.dspNotes||'',lines:S.dspLines.map(l=>({...l,qty:fN(l.qty)}))};
+  await Promise.all([...invOps,sb.from('dispenses').insert(toDb.dsp(disp))]);
+  S.dispenses.push(disp);S.dspLines=[];S.dspNotes='';S.dspEventId='';
+  toast(`✅ Dispensed ${disp.lines.length} item(s)`);nav('dispense');
+}
+
+// ── EVENTS ─────────────────────────────────────────
+function pgEvents(){
+  const cards=S.events.slice().reverse().map(ev=>{
+    const disps=S.dispenses.filter(d=>d.eventId===ev.id);
+    const dv=disps.reduce((a,d)=>a+d.lines.reduce((b,l)=>{const i=S.inv.find(x=>x.id===l.inventoryId);return b+fN(l.qty)*fN(i?.unitCost);},0),0);
+    return `<div class="card" style="border-top:3px solid #1B3254;margin:0">
+      <div style="font-weight:700;font-size:15px">${esc(ev.name)}</div>
+      <div style="font-size:12px;color:#6b7280;margin:3px 0">📅 ${ev.date?fD(ev.date+'T12:00:00'):'TBD'} · 📍 ${esc(ev.location||'—')} · 👥 ${esc(ev.attendees||'?')}</div>
+      ${ev.notes?`<div style="font-size:12px;color:#6b7280;font-style:italic">${esc(ev.notes)}</div>`:''}
+      <div style="font-size:12px;margin-top:4px">${disps.length} dispense(s)${dv>0?' · '+f$(dv)+' est.':''}</div>
+      <div class="fr" style="margin-top:8px">
+        <button class="btn btn-sec btn-sm" onclick="showEvEdit('${ev.id}')">Edit</button>
+        <button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('')||'<p style="color:#6b7280;font-size:13px">No events yet</p>';
+  return `<div class="ph"><div class="pt">🎉 Events (${S.events.length})</div><button class="btn btn-navy" onclick="showEvAdd()">+ New Event</button></div>
+    <div class="pgrid">${cards}</div>`;
+}
+
+function evFormHtml(ev={}){
+  return `<div class="fg">
+    <div class="full"><label class="lbl">Event Name *</label><input id="m-en" class="inp" value="${esc(ev.name||'')}"></div>
+    <div><label class="lbl">Date</label><input type="date" id="m-ed" class="inp" value="${esc(ev.date||'')}"></div>
+    <div><label class="lbl">Location</label><input id="m-el" class="inp" value="${esc(ev.location||'')}"></div>
+    <div><label class="lbl">Est. Attendees</label><input type="number" id="m-ea" class="inp" value="${esc(ev.attendees||'')}"></div>
+    <div class="full"><label class="lbl">Notes</label><input id="m-enotes" class="inp" value="${esc(ev.notes||'')}"></div>
+  </div>`;
+}
+function showEvAdd(){showModal('New Event',evFormHtml(),[{label:'💾 Save Event',cls:'btn-navy',fn:'saveEvAdd()'}]);}
+async function saveEvAdd(){
+  const name=document.getElementById('m-en')?.value?.trim();if(!name){alert('Name required');return;}
+  const ev={id:uid(),created:now(),createdBy:S.op,name,date:document.getElementById('m-ed')?.value||'',location:document.getElementById('m-el')?.value?.trim()||'',attendees:document.getElementById('m-ea')?.value||'',notes:document.getElementById('m-enotes')?.value?.trim()||''};
+  const {error}=await sb.from('events').insert(toDb.ev(ev));
+  if(error){alert('Save failed: '+error.message);return;}
+  S.events.push(ev);closeModal();nav('events');toast('✅ Event added!');
+}
+function showEvEdit(id){
+  const ev=S.events.find(e=>e.id===id);if(!ev)return;
+  showModal('Edit Event',evFormHtml(ev),[{label:'💾 Save',cls:'btn-navy',fn:`saveEvEdit('${id}')`}]);
+}
+async function saveEvEdit(id){
+  const name=document.getElementById('m-en')?.value?.trim();if(!name){alert('Name required');return;}
+  const idx=S.events.findIndex(e=>e.id===id);
+  const updated={...S.events[idx],name,date:document.getElementById('m-ed')?.value||'',location:document.getElementById('m-el')?.value?.trim()||'',attendees:document.getElementById('m-ea')?.value||'',notes:document.getElementById('m-enotes')?.value?.trim()||''};
+  const {error}=await sb.from('events').upsert(toDb.ev(updated));
+  if(error){alert('Save failed: '+error.message);return;}
+  S.events[idx]=updated;closeModal();nav('events');toast('✅ Event updated!');
+}
+async function delEv(id){
+  if(!confirm('Delete this event?'))return;
+  const {error}=await sb.from('events').delete().eq('id',id);
+  if(error){alert('Delete failed: '+error.message);return;}
+  S.events=S.events.filter(e=>e.id!==id);nav('events');toast('🗑️ Deleted');
+}
+
+// ── AUDIT ──────────────────────────────────────────
+function pgAudit(){
+  const pk=S.auditPantry||'';
+  const items=pk?S.inv.filter(i=>i.pantry===pk):S.inv;
+  if(!S.auditCounts)S.auditCounts={};
+  const changed=Object.keys(S.auditCounts).filter(id=>S.auditCounts[id]&&(S.auditCounts[id].n!==''||S.auditCounts[id].o!=='')).length;
+  const pkOpts=Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${pk===k?' selected':''}>${v.icon} ${v.label}</option>`).join('');
+  const rows=items.map(i=>{
+    const c=S.auditCounts[i.id]||{n:'',o:''};
+    const nN=c.n!==''?parseFloat(c.n):null,nO=c.o!==''?parseFloat(c.o):null;
+    const vN=nN!==null?nN-fN(i.qtyNew):null,vO=nO!==null?nO-fN(i.qtyOpen):null;
+    const pv=PANTRIES[i.pantry];
+    const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#6b7280':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
+    return `<tr style="background:${(vN!==null&&vN!==0)||(vO!==null&&vO!==0)?'#fff5f5':''}">
+      <td><strong>${esc(i.name)}</strong>${i.brand?` <span style="color:#6b7280;font-size:11px">· ${esc(i.brand)}</span>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px;margin-left:4px">AUDIT ONLY</span>':''}</td>
+      <td>${pbadge(i.pantry)}</td>
+      <td>${f2(i.qtyNew)}</td><td>${f2(i.qtyOpen)}</td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:78px;padding:3px 6px" value="${c.n}" placeholder="${f2(i.qtyNew)}" onchange="if(!S.auditCounts['${i.id}'])S.auditCounts['${i.id}']={n:'',o:''};S.auditCounts['${i.id}'].n=this.value;updateVar('${i.id}')"></td>
+      <td><input type="number" step="0.01" min="0" class="inp" style="width:78px;padding:3px 6px" value="${c.o}" placeholder="${f2(i.qtyOpen)}" onchange="if(!S.auditCounts['${i.id}'])S.auditCounts['${i.id}']={n:'',o:''};S.auditCounts['${i.id}'].o=this.value;updateVar('${i.id}')"></td>
+      <td id="av-${i.id}">${vc(vN,'New')}${vc(vO,'Open')}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="ph">
+    <div class="pt">🔍 Audit / Stock Count</div>
+    <div class="fr">
+      <select class="sel" style="width:180px" onchange="S.auditPantry=this.value;setContent(pgAudit())"><option value="">All Pantries</option>${pkOpts}</select>
+      ${changed?`<button class="btn btn-navy" onclick="commitAudit()">✅ Commit (${changed})</button><button class="btn btn-sec" onclick="S.auditCounts={};setContent(pgAudit())">Reset</button>`:''}
+    </div></div>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:10px">Enter physical counts. Leave blank to keep current. Audit-only items can only be updated here.</p>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>Product</th><th>Pantry</th><th>Sys New</th><th>Sys Open</th><th>Count New</th><th>Count Open</th><th>Variance</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function updateVar(id){
+  const i=S.inv.find(x=>x.id===id);if(!i)return;
+  const el=document.getElementById('av-'+id);if(!el)return;
+  const c=S.auditCounts[id]||{n:'',o:''};
+  const nN=c.n!==''?parseFloat(c.n):null,nO=c.o!==''?parseFloat(c.o):null;
+  const vN=nN!==null?nN-fN(i.qtyNew):null,vO=nO!==null?nO-fN(i.qtyOpen):null;
+  const pv=PANTRIES[i.pantry];
+  const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#6b7280':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
+  el.innerHTML=vc(vN,'New')+vc(vO,'Open');
+}
+
+async function commitAudit(){
+  const invOps=[],adjs=[];
+  Object.entries(S.auditCounts).forEach(([id,c])=>{
+    if(!c||(c.n===''&&c.o===''))return;
+    const idx=S.inv.findIndex(i=>i.id===id);if(idx<0)return;
+    const nN=c.n!==''?parseFloat(c.n):fN(S.inv[idx].qtyNew);
+    const nO=c.o!==''?parseFloat(c.o):fN(S.inv[idx].qtyOpen);
+    adjs.push({id:uid(),inventoryId:id,itemName:S.inv[idx].name,type:'set',qtyNew:nN,qtyOpen:nO,varNew:nN-fN(S.inv[idx].qtyNew),varOpen:nO-fN(S.inv[idx].qtyOpen),reason:'Audit',notes:'Audit by '+S.op,operator:S.op,date:now()});
+    S.inv[idx]={...S.inv[idx],qtyNew:nN,qtyOpen:nO};
+    invOps.push(sb.from('inventory').upsert(toDb.inv(S.inv[idx])));
+  });
+  if(!adjs.length){alert('No counts entered');return;}
+  await Promise.all([...invOps,...adjs.map(a=>sb.from('adjustments').insert(toDb.adj(a)))]);
+  S.adjustments.push(...adjs);S.auditCounts={};
+  toast(`✅ Audit committed — ${adjs.length} item(s) updated`);nav('audit');
+}
+
+// ── REPORTS ────────────────────────────────────────
+function pgReports(){
+  const f=S.rptFilt;const tab=f.tab||'dispenses';
+  const ops=[...new Set([...S.dispenses,...S.receives,...S.adjustments].map(x=>x.operator).filter(Boolean))];
+  const tabs=['dispenses','receives','events','adjustments'];
+  const tabBar=tabs.map(t=>`<button class="btn ${tab===t?'btn-navy':'btn-sec'}" onclick="S.rptFilt.tab='${t}';setContent(pgReports())">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
+  let tbl='';
+  if(tab==='dispenses'){
+    const rows=S.dispenses.filter(d=>(!f.event||d.eventId===f.event)&&(!f.op||d.operator===f.op)).slice().reverse().map(d=>{
+      const v=d.lines.reduce((a,l)=>{const i=S.inv.find(x=>x.id===l.inventoryId);return a+fN(l.qty)*fN(i?.unitCost);},0);
+      return `<tr><td>${fD(d.date)}</td><td>${esc(d.eventName||'—')}</td><td>${d.lines.length}</td><td>${v>0?f$(v):'—'}</td><td>${esc(d.operator)}</td><td>${esc(d.notes||'—')}</td></tr>`;
+    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:14px">None match</td></tr>';
+    tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Event</th><th>Items</th><th>Est. Cost</th><th>By</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }else if(tab==='receives'){
+    const rows=S.receives.filter(r=>(!f.pantry||r.pantry===f.pantry)&&(!f.op||r.operator===f.op)).slice().reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td><td>${esc(r.notes||'—')}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:14px">None match</td></tr>';
+    tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Pantry</th><th>Lines</th><th>By</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }else if(tab==='events'){
+    const rows=S.events.slice().reverse().map(e=>{
+      const ds=S.dispenses.filter(d=>d.eventId===e.id);
+      const v=ds.reduce((a,d)=>a+d.lines.reduce((b,l)=>{const i=S.inv.find(x=>x.id===l.inventoryId);return b+fN(l.qty)*fN(i?.unitCost);},0),0);
+      return `<tr><td><strong>${esc(e.name)}</strong></td><td>${e.date?fD(e.date+'T12:00:00'):'—'}</td><td>${esc(e.location||'—')}</td><td>${esc(e.attendees||'—')}</td><td>${ds.length}</td><td>${v>0?f$(v):'—'}</td></tr>`;
+    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:14px">No events</td></tr>';
+    tbl=`<table class="tbl"><thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Attend.</th><th>Dispenses</th><th>Est. Cost</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }else{
+    const rows=S.adjustments.slice().reverse().map(a=>`<tr><td>${fD(a.date)}</td><td>${esc(a.itemName)}</td><td>${esc(a.type)}</td><td>${f2(a.qtyNew)}${a.varNew!=null?` <span style="font-size:11px;color:${a.varNew>0?'#1B3254':a.varNew<0?'#dc2626':'#6b7280'}">(${a.varNew>0?'+':''}${f2(a.varNew)})</span>`:''}</td><td>${f2(a.qtyOpen)}${a.varOpen!=null?` <span style="font-size:11px;color:${a.varOpen>0?'#1B3254':a.varOpen<0?'#dc2626':'#6b7280'}">(${a.varOpen>0?'+':''}${f2(a.varOpen)})</span>`:''}</td><td>${esc(a.reason)}</td><td>${esc(a.operator)}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:14px">No adjustments</td></tr>';
+    tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Item</th><th>Type</th><th>New Qty</th><th>Open Qty</th><th>Reason</th><th>By</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  return `<div class="ph"><div class="pt">📋 Reports</div></div>
+    <div class="fr" style="margin-bottom:12px">${tabBar}</div>
+    <div class="card" style="padding:10px"><div class="fr">
+      ${tab==='dispenses'?`<select class="sel" style="width:180px" onchange="S.rptFilt.event=this.value;setContent(pgReports())"><option value="">All Events</option>${S.events.map(e=>`<option value="${e.id}"${f.event===e.id?' selected':''}>${esc(e.name)}</option>`).join('')}</select>`:''}
+      ${tab==='receives'?`<select class="sel" style="width:170px" onchange="S.rptFilt.pantry=this.value;setContent(pgReports())"><option value="">All Pantries</option>${Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${f.pantry===k?' selected':''}>${v.icon} ${v.label}</option>`).join('')}</select>`:''}
+      <select class="sel" style="width:130px" onchange="S.rptFilt.op=this.value;setContent(pgReports())"><option value="">All Users</option>${ops.map(o=>`<option${f.op===o?' selected':''}>${esc(o)}</option>`).join('')}</select>
+      <button class="btn btn-sec" onclick="S.rptFilt={tab:'${tab}',event:'',pantry:'',op:''};setContent(pgReports())">Clear</button>
+    </div></div>
+    <div style="overflow-x:auto">${tbl}</div>`;
+}
+
+// ── SETTINGS ───────────────────────────────────────
+function pgSettings(){
+  const tv=S.inv.reduce((a,i)=>a+qtot(i)*fN(i.unitCost),0);
+  const stats=[['Products',S.inv.length],['Est. Value',f$(tv)],['Audit-Only',S.inv.filter(i=>i.auditOnly).length],['Events',S.events.length],['Receives',S.receives.length],['Dispenses',S.dispenses.length],['Adjustments',S.adjustments.length]];
+  return `<div class="ph"><div class="pt">⚙️ Settings &amp; Data</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card">
+        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📤 Export</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-navy" onclick="expJSON()">💾 Full Backup (JSON)</button>
+          <button class="btn btn-sec" onclick="expCSV()">📊 Inventory CSV</button>
+        </div>
+        <p style="font-size:11px;color:#6b7280;margin-top:10px">Downloads a file to your device.</p>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📥 Restore</div>
+        <button class="btn btn-gold" onclick="document.getElementById('jf').click()">📂 Restore from JSON Backup</button>
+        <input id="jf" type="file" accept=".json" style="display:none" onchange="impJSON(this)">
+        <p style="font-size:11px;color:#6b7280;margin-top:10px">⚠️ Overwrites all data in Supabase.</p>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📊 Data Summary</div>
+        <div class="sgrid">${stats.map(([k,v])=>`<div style="background:#EEF1F7;border-radius:6px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#1B3254">${v}</div><div style="font-size:11px;color:#6b7280">${k}</div></div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function expJSON(){
+  const d={inv:S.inv,events:S.events,receives:S.receives,dispenses:S.dispenses,adjustments:S.adjustments,exported:now()};
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(d,null,2));
+  a.download=`delc-pantry-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+function expCSV(){
+  const rows=[['Name','Brand','UPC','Pantry','Category','Qty New','Qty Open','Total','Unit','Unit Cost','Est Value','Audit Only','Notes']];
+  S.inv.forEach(i=>{const t=qtot(i);rows.push([i.name,i.brand||'',i.upc||'',PANTRIES[i.pantry]?.label||i.pantry,i.category,f2(i.qtyNew),f2(i.qtyOpen),f2(t),i.unit||'',f2(i.unitCost),(t*fN(i.unitCost)).toFixed(2),i.auditOnly?'Yes':'No',i.notes||'']);});
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`delc-inventory-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+async function impJSON(input){
+  const file=input.files[0];if(!file)return;
+  const text=await file.text();
+  try{
+    const d=JSON.parse(text);
+    const inv=d.inv||d.inventory||[];
+    if(!confirm(`Restore backup? Overwrites ALL current data (${inv.length} products, ${d.events?.length||0} events).`)){input.value='';return;}
+    await Promise.all(['inventory','events','receives','dispenses','adjustments'].map(t=>sb.from(t).delete().neq('id','')));
+    const ops=[];
+    if(inv.length)ops.push(sb.from('inventory').insert(inv.map(toDb.inv)));
+    if(d.events?.length)ops.push(sb.from('events').insert(d.events.map(toDb.ev)));
+    if(d.receives?.length)ops.push(sb.from('receives').insert(d.receives.map(toDb.rec)));
+    if(d.dispenses?.length)ops.push(sb.from('dispenses').insert(d.dispenses.map(toDb.dsp)));
+    if(d.adjustments?.length)ops.push(sb.from('adjustments').insert(d.adjustments.map(toDb.adj)));
+    await Promise.all(ops);
+    S.inv=inv;S.events=d.events||[];S.receives=d.receives||[];S.dispenses=d.dispenses||[];S.adjustments=d.adjustments||[];
+    input.value='';toast('✅ Backup restored!');nav('dashboard');
+  }catch(e){alert('Import failed: '+e.message);input.value='';}
+}
+
+// ── MODAL ──────────────────────────────────────────
+function showModal(title,body,buttons=[]){
+  const btns=buttons.map(b=>`<button class="btn ${b.cls||'btn-sec'}" onclick="${b.fn}">${b.label}</button>`).join('');
+  document.getElementById('modal').innerHTML=`
+    <div class="mbg" onclick="if(event.target===this)closeModal()">
+      <div class="mbox">
+        <div class="mtitle">${esc(title)}<button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#6b7280">✕</button></div>
+        <div id="mbody">${body}</div>
+        ${btns?`<div class="fr" style="margin-top:16px">${btns}<button class="btn btn-sec" onclick="closeModal()">Cancel</button></div>`:''}
+      </div>
+    </div>`;
+}
+function closeModal(){document.getElementById('modal').innerHTML='';}
+
+// ── INIT ───────────────────────────────────────────
+renderLogin();
+</script>
+</body>
+</html>in
