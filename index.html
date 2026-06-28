@@ -48,7 +48,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#EEF1F7;color:#1f293
 .lbg{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1B3254}
 .lcard{background:#fff;border-radius:12px;padding:32px;width:340px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
-.mbox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.mbox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .mtitle{font-weight:700;font-size:16px;color:#1B3254;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
 #toast{position:fixed;bottom:20px;right:20px;z-index:300;display:none;padding:12px 18px;background:#1B3254;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .sdrop{border:1px solid #d1d5db;border-radius:6px;background:#fff;max-height:200px;overflow-y:auto;margin-top:2px}
@@ -172,6 +172,7 @@ async function lookupUPC(upc,statusId){
   return null;
 }
 
+// ── LOGIN ──────────────────────────────────────────
 function renderLogin(){
   document.getElementById('root').innerHTML=`
   <div class="lbg">
@@ -769,7 +770,7 @@ function pgSettings(){
   const tv=S.inv.reduce((a,i)=>a+qtot(i)*fN(i.unitCost),0);
   const stats=[['Products',S.inv.length],['Est. Value',f$(tv)],['Audit-Only',S.inv.filter(i=>i.auditOnly).length],['Events',S.events.length],['Receives',S.receives.length],['Dispenses',S.dispenses.length],['Adjustments',S.adjustments.length]];
   return `<div class="ph"><div class="pt">⚙️ Settings &amp; Data</div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
       <div class="card">
         <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📤 Export</div>
         <div style="display:flex;flex-direction:column;gap:8px">
@@ -779,8 +780,14 @@ function pgSettings(){
         <p style="font-size:11px;color:#6b7280;margin-top:10px">Downloads a file to your device.</p>
       </div>
       <div class="card">
-        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📥 Restore</div>
-        <button class="btn btn-gold" onclick="document.getElementById('jf').click()">📂 Restore from JSON Backup</button>
+        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📋 Import Inventory CSV</div>
+        <button class="btn btn-gold" onclick="document.getElementById('csvf').click()">📋 Import from CSV</button>
+        <input id="csvf" type="file" accept=".csv,.txt" style="display:none" onchange="impCSV(this)">
+        <p style="font-size:11px;color:#6b7280;margin-top:10px">Imports inventory from a CSV. Required column: Name. Optional: Brand, UPC, Pantry, Category, Qty New, Qty Open, Unit, Unit Cost, Notes.</p>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">🔄 Restore Backup</div>
+        <button class="btn btn-sec" onclick="document.getElementById('jf').click()">📂 Restore from JSON</button>
         <input id="jf" type="file" accept=".json" style="display:none" onchange="impJSON(this)">
         <p style="font-size:11px;color:#6b7280;margin-top:10px">⚠️ Overwrites all data in Supabase.</p>
       </div>
@@ -791,6 +798,7 @@ function pgSettings(){
     </div>`;
 }
 
+// ── EXPORT ─────────────────────────────────────────
 function expJSON(){
   const d={inv:S.inv,events:S.events,receives:S.receives,dispenses:S.dispenses,adjustments:S.adjustments,exported:now()};
   const a=document.createElement('a');
@@ -823,6 +831,157 @@ async function impJSON(input){
   }catch(e){alert('Import failed: '+e.message);input.value='';}
 }
 
+// ── CSV IMPORT ─────────────────────────────────────
+function parseCSVText(text){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const parseRow=line=>{
+    const fields=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(ch===','&&!inQ){fields.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+    fields.push(cur.trim());return fields;
+  };
+  const headers=parseRow(lines[0]).map(h=>h.replace(/^"|"$/g,'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
+  const rows=lines.slice(1).map(line=>{
+    const fields=parseRow(line);
+    const obj={};headers.forEach((h,i)=>obj[h]=(fields[i]||'').replace(/^"|"$/g,'').trim());
+    return obj;
+  }).filter(r=>r.name||r.upc);
+  return{headers,rows};
+}
+
+function pantryKey(val){
+  if(!val)return'';
+  const v=val.toLowerCase().trim();
+  for(const[k,p]of Object.entries(PANTRIES)){
+    if(k===v||p.label.toLowerCase()===v||v.includes(k))return k;
+  }
+  return'';
+}
+
+function impCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const parsed=parseCSVText(e.target.result);
+    if(!parsed||!parsed.rows.length){alert('No valid rows found. Make sure the CSV has a header row with a Name column.');input.value='';return;}
+    showCSVPreview(parsed.rows);
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function showCSVPreview(rows){
+  const pantryVals=[...new Set(rows.map(r=>(r.pantry||r.pantry_label||'').trim()).filter(Boolean))];
+  window._csvPMap={};
+  pantryVals.forEach(v=>window._csvPMap[v]=pantryKey(v)||'');
+  window._csvRows=rows;
+
+  const mapHtml=pantryVals.length?`
+    <div style="background:#f0f4f8;border-radius:8px;padding:12px;margin-bottom:14px">
+      <div style="font-weight:700;color:#1B3254;font-size:13px;margin-bottom:8px">🗺️ Map Pantry Values to Pantries</div>
+      ${pantryVals.map(v=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:13px;min-width:160px;font-weight:600">${esc(v)}</span>
+          <span style="color:#6b7280">→</span>
+          <select class="sel" style="flex:1" onchange="window._csvPMap['${esc(v)}']=this.value">
+            <option value="">— Select Pantry —</option>
+            ${Object.entries(PANTRIES).map(([k,p])=>`<option value="${k}"${window._csvPMap[v]===k?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
+          </select>
+          ${window._csvPMap[v]?'<span style="color:#166534;font-weight:700;font-size:16px">✓</span>':'<span style="color:#dc2626;font-size:11px">required</span>'}
+        </div>`).join('')}
+    </div>`:'';
+
+  const preview=rows.slice(0,15).map(r=>`
+    <tr>
+      <td>${esc(r.name||'—')}</td>
+      <td>${esc(r.brand||'—')}</td>
+      <td style="font-family:monospace;font-size:11px;color:#6b7280">${esc(r.upc||'—')}</td>
+      <td>${esc(r.pantry||r.pantry_label||'—')}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${esc(r.qty_new||r.qty||'0')}</td>
+      <td>${esc(r.qty_open||'0')}</td>
+      <td>${esc(r.unit_cost||'0')}</td>
+    </tr>`).join('');
+
+  showModal(`📋 CSV Import Preview — ${rows.length} row(s)`,`
+    ${mapHtml}
+    <div style="font-weight:600;font-size:13px;color:#1B3254;margin-bottom:6px">Preview (first 15 of ${rows.length} rows)</div>
+    <div style="overflow-x:auto;margin-bottom:14px">
+      <table class="tbl">
+        <thead><tr><th>Name</th><th>Brand</th><th>UPC</th><th>Pantry</th><th>Category</th><th>Qty New</th><th>Qty Open</th><th>Unit Cost</th></tr></thead>
+        <tbody>${preview}</tbody>
+      </table>
+      ${rows.length>15?`<p style="font-size:11px;color:#6b7280;padding:6px 0">…and ${rows.length-15} more rows</p>`:''}
+    </div>
+    <div>
+      <label class="lbl">Import Mode</label>
+      <select id="csv-mode" class="sel">
+        <option value="add">Add new items only — skip rows where UPC already exists</option>
+        <option value="update">Add new + add qty to existing matching UPCs</option>
+        <option value="replace">Add new + fully replace existing matching UPCs</option>
+      </select>
+    </div>`,
+    [{label:`✅ Import ${rows.length} Rows`,cls:'btn-navy',fn:'commitCSVImport()'}]);
+}
+
+async function commitCSVImport(){
+  const rows=window._csvRows||[];
+  const pMap=window._csvPMap||{};
+  const mode=document.getElementById('csv-mode')?.value||'add';
+  if(!rows.length)return;
+
+  const unmapped=[...new Set(rows.map(r=>(r.pantry||r.pantry_label||'').trim()).filter(Boolean))].filter(v=>!pMap[v]);
+  if(unmapped.length){alert('Please map all pantries before importing:\n\n'+unmapped.join('\n'));return;}
+
+  let added=0,updated=0,skipped=0;
+  const invOps=[];
+
+  rows.forEach(r=>{
+    const name=(r.name||'').trim();if(!name){skipped++;return;}
+    const pantryRaw=(r.pantry||r.pantry_label||'').trim();
+    const pk=pMap[pantryRaw]||pantryKey(pantryRaw)||'kitchen';
+    const p=PANTRIES[pk];
+    const validCats=p?.cats||[];
+    const cat=validCats.includes(r.category)?r.category:validCats[0]||'Other';
+    const qtyNew=fN(r.qty_new||r.qty||0);
+    const qtyOpen=fN(r.qty_open||0);
+    const unitCost=fN(r.unit_cost||r.unitcost||0);
+    const upc=(r.upc||'').trim();
+    const existIdx=upc?S.inv.findIndex(i=>i.upc===upc):-1;
+
+    if(existIdx>=0){
+      if(mode==='add'){skipped++;return;}
+      if(mode==='update'){
+        S.inv[existIdx]={...S.inv[existIdx],qtyNew:fN(S.inv[existIdx].qtyNew)+qtyNew,qtyOpen:fN(S.inv[existIdx].qtyOpen)+qtyOpen};
+        if(unitCost>0)S.inv[existIdx].unitCost=unitCost;
+        invOps.push(sb.from('inventory').upsert(toDb.inv(S.inv[existIdx])));
+        updated++;
+      }else{
+        S.inv[existIdx]={...S.inv[existIdx],name,brand:(r.brand||'').trim(),size:(r.size||'').trim(),pantry:pk,category:cat,qtyNew,qtyOpen,unit:(r.unit||'').trim(),unitCost,notes:(r.notes||'').trim()};
+        invOps.push(sb.from('inventory').upsert(toDb.inv(S.inv[existIdx])));
+        updated++;
+      }
+    }else{
+      const item={id:uid(),created:now(),upc,name,brand:(r.brand||'').trim(),size:(r.size||'').trim(),pantry:pk,category:cat,qtyNew,qtyOpen,unit:(r.unit||'').trim(),unitCost,auditOnly:(r.audit_only||'').toLowerCase()==='yes',notes:(r.notes||'').trim()};
+      S.inv.push(item);
+      invOps.push(sb.from('inventory').insert(toDb.inv(item)));
+      added++;
+    }
+  });
+
+  if(!invOps.length){alert(`Nothing to import. ${skipped} row(s) skipped (no name, or UPC already exists in Add-only mode).`);closeModal();return;}
+  await Promise.all(invOps);
+  S.inv.sort((a,b)=>a.name.localeCompare(b.name));
+  delete window._csvRows;delete window._csvPMap;
+  closeModal();nav('inventory');
+  toast(`✅ Import done: ${added} added, ${updated} updated, ${skipped} skipped`);
+}
+
 // ── MODAL ──────────────────────────────────────────
 function showModal(title,body,buttons=[]){
   const btns=buttons.map(b=>`<button class="btn ${b.cls||'btn-sec'}" onclick="${b.fn}">${b.label}</button>`).join('');
@@ -841,4 +1000,4 @@ function closeModal(){document.getElementById('modal').innerHTML='';}
 renderLogin();
 </script>
 </body>
-</html>in
+</html>
