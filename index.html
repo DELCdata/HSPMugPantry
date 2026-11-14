@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>delcPANTRY</title>
 <meta name="theme-color" content="#1B3254">
-<script src="https://delcdata.github.io/DELCAppsHub/delc-kit.js?v=2"></script>
+<script src="https://delcdata.github.io/DELCAppsHub/delc-kit.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --navy:#1B3254;--navy-2:#14273F;--gold:#C8973A;--gold-2:#B5852C;
+  --navy:#1B3254;--navy-2:#14273F;--gold:#1B3254;--gold-2:#14273F;
   --bg:#F2F2F7;--surface:#FFFFFF;--fill:rgba(118,118,128,.12);--fill-2:rgba(118,118,128,.20);
   --label:#1C1C1E;--label-2:rgba(60,60,67,.62);--sep:rgba(60,60,67,.14);
   --red:#FF3B30;--orange:#FF9500;--green:#34C759;
@@ -25,7 +25,7 @@ body{font-family:var(--delc-body,-apple-system,BlinkMacSystemFont,"Segoe UI",sys
 #nav{background:rgba(27,50,84,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);color:#fff;display:flex;align-items:center;gap:4px;padding:8px max(16px,env(safe-area-inset-left));min-height:56px;position:sticky;top:0;z-index:50;border-bottom:.5px solid rgba(255,255,255,.12);overflow-x:auto;scrollbar-width:none}
 #nav::-webkit-scrollbar{display:none}
 .brand{font-weight:700;font-size:17px;letter-spacing:-.02em;margin-right:14px;white-space:nowrap;display:flex;align-items:center;gap:8px}
-.brand .dot{width:26px;height:26px;border-radius:7px;background:linear-gradient(145deg,#D9AC55,var(--gold));display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.brand .dot{width:26px;height:26px;border-radius:7px;background:linear-gradient(145deg,#2c4f86,var(--navy));display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .nb{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:none;background:transparent;color:rgba(255,255,255,.78);cursor:pointer;border-radius:980px;font:500 13px/1 sans-serif;font-family:inherit;white-space:nowrap;transition:background .2s var(--ease),color .2s}
 .nb svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .nb:hover{background:rgba(255,255,255,.10);color:#fff}
@@ -46,7 +46,7 @@ body{font-family:var(--delc-body,-apple-system,BlinkMacSystemFont,"Segoe UI",sys
 /* ── Buttons: capsule, Apple-style press ── */
 .btn{padding:9px 18px;border-radius:980px;border:none;cursor:pointer;font:600 14px/1.2 sans-serif;font-family:inherit;letter-spacing:-.01em;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s var(--ease),filter .15s,background .15s;white-space:nowrap}
 .btn:active{transform:scale(.96)}
-.btn:focus-visible{outline:3px solid rgba(200,151,58,.5);outline-offset:2px}
+.btn:focus-visible{outline:3px solid rgba(47,128,237,.5);outline-offset:2px}
 .btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy-2)}
 .btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--gold-2)}
 .btn-sec{background:var(--fill);color:var(--navy)}.btn-sec:hover{background:var(--fill-2)}
@@ -97,10 +97,10 @@ input[type=checkbox]{accent-color:var(--navy);width:18px;height:18px}
 .qty-ok{font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
 
 /* ── Sign in ── */
-.lbg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(1200px 600px at 20% -10%,#2C4A78 0%,transparent 60%),radial-gradient(900px 500px at 110% 110%,rgba(200,151,58,.35) 0%,transparent 55%),var(--navy)}
+.lbg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(1200px 600px at 20% -10%,#2C4A78 0%,transparent 60%),radial-gradient(900px 500px at 110% 110%,rgba(47,128,237,.22) 0%,transparent 55%),var(--navy)}
 .lcard{background:rgba(255,255,255,.92);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-radius:28px;padding:40px 32px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35);animation:fadeUp .5s var(--ease)}
 .lcard .lbl{text-align:left}
-.app-icon{width:76px;height:76px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(150deg,#D9AC55,var(--gold) 55%,#A9792A);display:grid;place-items:center;font-size:38px;box-shadow:0 8px 20px rgba(200,151,58,.4),inset 0 1px 0 rgba(255,255,255,.35)}
+.app-icon{width:76px;height:76px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(150deg,#2c4f86,var(--navy) 55%,#14273F);display:grid;place-items:center;font-size:38px;box-shadow:0 8px 20px rgba(27,50,84,.35),inset 0 1px 0 rgba(255,255,255,.35)}
 .lcard .ltitle{font-size:26px;font-weight:700;color:var(--label);letter-spacing:-.03em}
 .lcard .lsub{font-size:15px;color:var(--label-2);margin:4px 0 26px}
 
@@ -186,18 +186,18 @@ var DelcScan=(function(){
   }
   var css=''+
   '.cam-wrap{display:flex;gap:8px;align-items:center;flex:1;min-width:0}.cam-wrap>input{flex:1;min-width:0}'+
-  '.cam-btn{flex-shrink:0;width:42px;height:42px;border-radius:12px;border:none;background:#C8973A;color:#fff;font-size:20px;line-height:1;cursor:pointer;display:inline-grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.18);font-family:inherit;padding:0}'+
+  '.cam-btn{flex-shrink:0;width:42px;height:42px;border-radius:12px;border:none;background:#2F80ED;color:#fff;font-size:20px;line-height:1;cursor:pointer;display:inline-grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.18);font-family:inherit;padding:0}'+
   '.cam-btn:active{transform:scale(.94)}.cam-btn.sm{width:36px;height:36px;font-size:17px;border-radius:10px}'+
   'html.no-cam .cam-btn{display:none!important}'+
   '#dscan{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;max-width:100vw;overflow:hidden;box-sizing:border-box;z-index:100000;background:#000;display:flex;flex-direction:column;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}'+
   '#dscan .ds-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 12px}'+
   '#dscan .ds-t{font-size:17px;font-weight:600}#dscan .ds-s{font-size:13px;color:rgba(255,255,255,.7)}'+
   '#dscan .ds-b{border:none;border-radius:980px;padding:10px 18px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.18);color:#fff}'+
-  '#dscan .ds-b.on{background:#C8973A}#dscan .ds-done{background:#fff;color:#1B3254}'+
+  '#dscan .ds-b.on{background:#2F80ED}#dscan .ds-done{background:#fff;color:#1B3254}'+
   '#dscan *{box-sizing:border-box}#dscan .ds-cam{flex:1;min-height:0;width:100%;min-width:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}'+
   '#dscan #ds-reader{width:100%!important;max-width:720px;min-width:0}#dscan #ds-reader video{width:100%!important;max-width:100%!important;object-fit:cover;height:auto!important;display:block;border-radius:0}'+
   '#dscan #ds-reader img,#dscan #ds-reader > div:not(#qr-shaded-region){display:none!important}'+
-  '#dscan #qr-shaded-region{border-color:rgba(0,0,0,.45)!important}#dscan #qr-shaded-region > div{background:#C8973A!important}'+
+  '#dscan #qr-shaded-region{border-color:rgba(0,0,0,.45)!important}#dscan #qr-shaded-region > div{background:#2F80ED!important}'+
   '#dscan .ds-flash{position:absolute;inset:0;background:rgba(52,199,89,.35);opacity:0;pointer-events:none;transition:opacity .25s}#dscan .ds-flash.on{opacity:1;transition:none}'+
   '#dscan .ds-bot{padding:14px 16px max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}'+
   '#dscan .ds-msg{font-size:15px;min-height:22px}#dscan .ds-msg b{color:#7ee2a0}#dscan .ds-msg.err{color:#ffb4ab}'+
@@ -310,7 +310,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const LOW_QTY  = 3;
 
 const PANTRIES = {
-  kitchen:     {label:'Kitchen Pantry',    icon:'🍽️',color:'#d97706',bg:'#fef3c7',cats:['Food','Beverages','Condiments','Snacks','Dairy','Dry Goods','Frozen','Produce','Other']},
+  kitchen:     {label:'Kitchen Pantry',    icon:'🍽️',color:'#1a7f45',bg:'#e6f4ea',cats:['Food','Beverages','Condiments','Snacks','Dairy','Dry Goods','Frozen','Produce','Other']},
   mug:         {label:'Mug Pantry',         icon:'☕', color:'#7c3aed',bg:'#ede9fe',cats:['Syrups','Espresso Pods','Coffee','Tea','Creamers','Sweeteners','Other']},
   hospitality: {label:'Hospitality Closet',icon:'🗄️',color:'#0284c7',bg:'#e0f2fe',cats:['Napkins','Paper Towels','Cups','Plates','Utensils','Bags','Cleaning Supplies','Other']}
 };
@@ -645,7 +645,7 @@ const readContent=()=>{const q=fN(document.getElementById('m-cq')?.value);return
 
 function showInvAdd(){
   showModal('Add Product',`
-    <div id="upc-st" style="font-size:12px;color:#C8973A;min-height:16px;margin-bottom:8px"></div>
+    <div id="upc-st" style="font-size:12px;color:#1B3254;min-height:16px;margin-bottom:8px"></div>
     <div class="fr" style="margin-bottom:10px">
       <span class="cam-wrap"><input id="m-upc" class="inp" style="flex:1" placeholder="UPC barcode (optional)" onkeydown="if(event.key==='Enter')doUPC()"><button type="button" class="cam-btn sm" aria-label="Scan with camera" title="Scan with camera" onclick="DelcScan.near(this,{title:'Scan item UPC'})">📷</button></span>
       <button class="btn btn-gold btn-sm" onclick="doUPC()">🔍 Lookup</button>
@@ -794,7 +794,7 @@ function pgReceive(){
         <span class="cam-wrap"><input id="rec-upc" class="inp" style="flex:1" placeholder="Scan UPC here…" onkeydown="if(event.key==='Enter')addRecUPC()"><button type="button" class="cam-btn" aria-label="Scan with camera" title="Scan with camera" onclick="DelcScan.near(this,{multi:true,title:'Receive items'})">📷</button></span>
         <button class="btn btn-navy" onclick="addRecUPC()">Add UPC</button>
       </div>
-      <div id="upc-st2" style="font-size:12px;color:#C8973A;min-height:16px;margin-bottom:6px"></div>
+      <div id="upc-st2" style="font-size:12px;color:#1B3254;min-height:16px;margin-bottom:6px"></div>
       <input class="inp" placeholder="Or search by product name…" oninput="showRecSearch(this.value)" style="margin-bottom:4px">
       <div id="rec-drop"></div>
       ${linesSection}
@@ -874,7 +874,7 @@ function pgDispense(){
     </tr>`).join('');
   const linesSection=S.dspLines.length?`
     <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb">
-    ${totCost>0?`<div style="text-align:right;font-weight:700;color:#C8973A;margin-bottom:6px">Est. Cost: ${f$(totCost)}</div>`:''}
+    ${totCost>0?`<div style="text-align:right;font-weight:700;color:#1B3254;margin-bottom:6px">Est. Cost: ${f$(totCost)}</div>`:''}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
         <th style="text-align:left;font-size:11px;padding:4px 6px;color:#6b7280">Product</th>
@@ -1230,12 +1230,12 @@ function pgAuditScan(){
   const pending=S.scanPendingQty;
   const scanBar=!pending
     ?`<div class="fr" style="background:#1B3254;padding:12px;border-radius:8px;margin-bottom:10px">
-        <span style="color:#C8973A;font-weight:700;font-size:13px">📡 Scan</span>
+        <span style="color:#1B3254;font-weight:700;font-size:13px">📡 Scan</span>
         <span class="cam-wrap"><input id="aud-upc" class="inp" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff" placeholder="Scan or type UPC, then Enter…" onkeydown="if(event.key==='Enter')auditScanSubmit()"><button type="button" class="cam-btn" aria-label="Scan with camera" title="Scan with camera" onclick="DelcScan.near(this,{multi:${S.scanMode==='each'},title:'Stock count'})">📷</button></span>
         <button class="btn btn-gold" onclick="auditScanSubmit()"${S.scanLooking?' disabled':''}>${S.scanLooking?'Looking…':'Add'}</button>
       </div>`
     :`<div class="fr" style="background:#1B3254;padding:12px;border-radius:8px;margin-bottom:10px">
-        <span style="color:#C8973A;font-weight:700;font-size:13px">🔢 Qty for ${esc(pending.name)}</span>
+        <span style="color:#1B3254;font-weight:700;font-size:13px">🔢 Qty for ${esc(pending.name)}</span>
         <input id="aud-qty" type="number" min="1" step="0.01" class="inp" style="max-width:120px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff" value="${S.scanQtyInput||1}" onkeydown="if(event.key==='Enter')auditSubmitQty()">
         <button class="btn btn-gold" onclick="auditSubmitQty()">Add</button>
         <button class="btn btn-sec" onclick="S.scanPendingQty=null;renderAudit()">Cancel</button>
