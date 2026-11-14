@@ -999,6 +999,34 @@ function pgEvents(){
     <div class="pgrid">${cards}</div>`;
 }
 
+// ── printed count sheet (2026-11-14): take it to the shelves, write counts, then enter them on this Audit page ──
+function printCountSheet(){
+  const pk=S.auditPantry||'';
+  const keys=pk?[pk]:Object.keys(PANTRIES);
+  const D=window.DELC;
+  const sec=keys.map(k=>{const pv=PANTRIES[k];const items=S.inv.filter(i=>i.pantry===k);if(!items.length)return'';
+    const cats=[...new Set([...(pv.cats||[]),...items.map(i=>i.category||'Other')])];
+    const rows=cats.map(c=>{const L=items.filter(i=>(i.category||'Other')===c).sort((a,b)=>a.name.localeCompare(b.name));if(!L.length)return'';
+      return `<tr class="cat"><td colspan="6">${esc(c)}</td></tr>`+L.map(i=>`<tr><td><b>${esc(i.name)}</b>${i.brand||i.size?`<div class="sm">${esc([i.brand,i.size].filter(Boolean).join(' · '))}</div>`:''}</td><td class="n">${f2(i.qtyNew)}</td><td class="n">${f2(i.qtyOpen)}</td><td class="box"></td><td class="box"></td><td></td></tr>`).join('');}).join('');
+    return `<div class="pan"><h2>${pv.icon} ${esc(pv.label)} <span class="sm">· ${items.length} item${items.length===1?'':'s'}</span></h2>
+      <table><thead><tr><th style="width:38%">Item</th><th class="n" style="width:9%">On file<br>new</th><th class="n" style="width:9%">On file<br>open</th><th style="width:11%">Count<br>new</th><th style="width:11%">Count<br>open</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');
+  const title=pk?PANTRIES[pk].label+' — Count sheet':'Pantry count sheet';
+  const w=window.open('','_blank');if(!w){toast('Allow pop-ups for this site to print');return;}
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>${D?D.printCss:''}
+    body{font-family:"Figtree","Segoe UI",Helvetica,Arial,sans-serif;color:#18233a;margin:0;font-size:10.5pt}@page{margin:.45in}
+    table{width:100%;border-collapse:collapse}th{font-size:8pt;text-transform:uppercase;letter-spacing:.04em;color:#5d6a82;text-align:left;border-bottom:1.5px solid #1B3254;padding:4px 6px;vertical-align:bottom}
+    td{border-bottom:1px solid #c3cbd8;padding:5px 6px;vertical-align:top}.n{text-align:right}.sm{font-size:8.5pt;color:#5d6a82;font-weight:400}
+    td.box{border:1px solid #8a94a6;height:24px}tr.cat td{background:#eef1f6;font-weight:800;font-size:9pt;color:#1B3254;text-transform:uppercase;letter-spacing:.05em;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    h2{font-size:13pt;color:#1B3254;margin:14px 0 6px}.pan+.pan{break-before:page}tr{break-inside:avoid}.how{font-size:9.5pt;margin:0 0 6px}
+    .sig{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px;margin-top:22px;break-inside:avoid}.sig div{border-top:1px solid #333;padding-top:3px;font-size:8.5pt;color:#5d6a82}</style></head><body>
+    ${D?D.letterhead({title,sub:'Write what is on the shelf — new (sealed) and open separately. Leave a box blank if it matches.',right:'Counted on<br>____ / ____ / ______'}):'<h1>'+esc(title)+'</h1>'}
+    ${sec||'<p>No items in this pantry yet.</p>'}
+    <div class="sig"><div>Counted by</div><div>Checked by</div><div>Entered in delcPANTRY</div></div>
+    ${D?D.footer('delcPANTRY','Count sheet'):''}
+    <script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300)}<\/script></body></html>`);
+  w.document.close();
+}
+
 // ── AUDIT ──────────────────────────────────────────
 function pgAudit(){
   const modeBtns=`<div class="fr" style="margin-bottom:12px">
@@ -1032,6 +1060,7 @@ function pgAudit(){
     <div class="pt">🔍 Audit / Stock Count</div>
     <div class="fr filters">
       <select class="sel" style="width:180px" onchange="S.auditPantry=this.value;setContent(pgAudit())"><option value="">All Pantries</option>${pkOpts}</select>
+      <button class="btn btn-sec" onclick="printCountSheet()" title="Print a paper count sheet for the pantry chosen here">🖨 Count sheet</button>
       ${changed?`<button class="btn btn-navy" onclick="commitAudit()">✅ Commit (${changed})</button><button class="btn btn-sec" onclick="S.auditCounts={};setContent(pgAudit())">Reset</button>`:''}
     </div></div>
     ${modeBtns}
