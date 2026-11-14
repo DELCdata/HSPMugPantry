@@ -12,7 +12,7 @@
   --navy:#1B3254;--navy-2:#14273F;--gold:#1B3254;--gold-2:#14273F;
   --bg:#eef1f6;--surface:#FFFFFF;--fill:rgba(118,118,128,.12);--fill-2:rgba(118,118,128,.20);
   --label:#1C1C1E;--label-2:rgba(60,60,67,.62);--sep:rgba(60,60,67,.14);
-  --red:#FF3B30;--orange:#FF9500;--green:#34C759;
+  --red:#C62828;--orange:#FF9500;--green:#34C759;
   --r-lg:18px;--r-md:12px;--r-sm:9px;
   --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
   --ease:cubic-bezier(.32,.72,0,1);
@@ -50,7 +50,7 @@ body{font-family:var(--delc-body,-apple-system,BlinkMacSystemFont,"Segoe UI",sys
 .btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy-2)}
 .btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--gold-2)}
 .btn-sec{background:var(--fill);color:var(--navy)}.btn-sec:hover{background:var(--fill-2)}
-.btn-red{background:rgba(255,59,48,.12);color:var(--red)}.btn-red:hover{background:rgba(255,59,48,.2)}
+.btn-red{background:rgba(198,40,40,.12);color:var(--red)}.btn-red:hover{background:rgba(198,40,40,.2)}
 .btn-sm{padding:6px 12px;font-size:12px}
 a.btn{text-decoration:none}
 .btn:disabled{opacity:.4;cursor:default;transform:none}
@@ -335,9 +335,9 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const LOW_QTY  = 3;
 
 const PANTRIES = {
-  kitchen:     {label:'Kitchen Pantry',    icon:'🍽️',color:'#1a7f45',bg:'#e6f4ea',cats:['Food','Beverages','Condiments','Snacks','Dairy','Dry Goods','Frozen','Produce','Other']},
+  kitchen:     {label:'Kitchen Pantry',    icon:'🍽️',color:'#17703d',bg:'#e6f4ea',cats:['Food','Beverages','Condiments','Snacks','Dairy','Dry Goods','Frozen','Produce','Other']},
   mug:         {label:'Mug Pantry',         icon:'☕', color:'#7c3aed',bg:'#ede9fe',cats:['Syrups','Espresso Pods','Coffee','Tea','Creamers','Sweeteners','Other']},
-  hospitality: {label:'Hospitality Closet',icon:'🗄️',color:'#0284c7',bg:'#e0f2fe',cats:['Napkins','Paper Towels','Cups','Plates','Utensils','Bags','Cleaning Supplies','Other']}
+  hospitality: {label:'Hospitality Closet',icon:'🗄️',color:'#0369a1',bg:'#e0f2fe',cats:['Napkins','Paper Towels','Cups','Plates','Utensils','Bags','Cleaning Supplies','Other']}
 };
 const REASONS = ['Used at Event','Spoiled/Expired','Damaged','Correction','Found','Restocked','Other'];
 const PAGES   = [
@@ -491,7 +491,7 @@ async function enterApp(sess){
   S.op=String(sess.username||'').toLowerCase();S.opName=sess.displayName||sess.username;
   document.getElementById('root').innerHTML=`
     <div id="nav"></div>
-    <div id="wrap"><div style="text-align:center;padding:40px;color:#6b7280">Loading…</div></div>`;
+    <div id="wrap"><div style="text-align:center;padding:40px;color:#555d6b">Loading…</div></div>`;
   await loadAll();
   nav('dashboard');
 }
@@ -538,7 +538,7 @@ function renderNav(){
 
 async function nav(page){
   S.page=page; renderNav();
-  setContent('<div style="text-align:center;padding:40px;color:#6b7280">Loading…</div>');
+  setContent('<div style="text-align:center;padding:40px;color:#555d6b">Loading…</div>');
   const fns={dashboard:pgDashboard,inventory:pgInventory,receive:pgReceive,dispense:pgDispense,events:pgEvents,audit:pgAudit,reports:pgReports,settings:pgSettings};
   setContent(fns[page]?fns[page]():'');
 }
@@ -568,17 +568,17 @@ function pgDashboard(){
       <div style="display:flex;justify-content:space-between;margin-bottom:10px">
         <div style="display:flex;gap:10px;align-items:center">
           <span style="font-size:28px">${pv.icon}</span>
-          <div><div style="font-weight:700;color:${pv.color}">${pv.label}</div><div style="font-size:11px;color:#6b7280">${items.length} products</div></div>
+          <div><div style="font-weight:700;color:${pv.color}">${pv.label}</div><div style="font-size:12px;color:#555d6b">${items.length} products</div></div>
         </div>
-        <div style="text-align:right"><div style="font-size:17px;font-weight:700;color:${pv.color}">${f$(tv)}</div><div style="font-size:11px;color:#6b7280">${tq.toFixed(2)} units</div></div>
+        <div style="text-align:right"><div style="font-size:17px;font-weight:700;color:${pv.color}">${f$(tv)}</div><div style="font-size:12px;color:#555d6b">${tq.toFixed(2)} units</div></div>
       </div>
-      ${out?`<div style="font-size:11px;color:#dc2626;margin-bottom:3px">❌ ${out} out of stock</div>`:''}
+      ${out?`<div style="font-size:12px;color:#b91c1c;margin-bottom:3px">❌ ${out} out of stock</div>`:''}
       ${low?`<div style="font-size:11px;color:#d97706;margin-bottom:6px">⚡ ${low} running low</div>`:''}
-      ${bars||'<p style="font-size:12px;color:#6b7280">No stock yet</p>'}
+      ${bars||'<p style="font-size:12px;color:#555d6b">No stock yet</p>'}
     </div>`;
   }).join('');
-  const recRows=S.receives.slice(-5).reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:12px">None yet</td></tr>';
-  const evRows=S.events.slice(-5).reverse().map(e=>`<tr><td>${e.date?fD(e.date+'T12:00:00'):'TBD'}</td><td>${esc(e.name)}</td><td>${esc(e.location||'—')}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:#6b7280;padding:12px">None yet</td></tr>';
+  const recRows=S.receives.slice(-5).reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#555d6b;padding:12px">None yet</td></tr>';
+  const evRows=S.events.slice(-5).reverse().map(e=>`<tr><td>${e.date?fD(e.date+'T12:00:00'):'TBD'}</td><td>${esc(e.name)}</td><td>${esc(e.location||'—')}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:#555d6b;padding:12px">None yet</td></tr>';
   return `<div class="ph"><div class="pt">📊 Dashboard</div></div>
     ${stats}
     <div style="font-size:16px;font-weight:700;color:#1B3254;margin-bottom:10px">Pantry Overview</div>
@@ -607,22 +607,22 @@ function pgInventory(){
   const rows=items.map(i=>{
     const t=qtot(i),v=t*fN(i.unitCost),p=PANTRIES[i.pantry];
     return `<tr>
-      <td><div style="font-weight:600">${esc(i.name)}</div>${i.brand?`<div style="font-size:11px;color:#6b7280">${esc(i.brand)}${i.size?' · '+esc(i.size):''}</div>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px">AUDIT ONLY</span>':''}</td>
+      <td><div style="font-weight:600">${esc(i.name)}</div>${i.brand?`<div style="font-size:12px;color:#555d6b">${esc(i.brand)}${i.size?' · '+esc(i.size):''}</div>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px">AUDIT ONLY</span>':''}</td>
       <td>${pbadge(i.pantry)}</td><td>${esc(i.category)}</td>
       <td><span style="color:#1B3254;font-weight:600">${f2(i.qtyNew)}</span></td>
       <td><span style="color:${p?.color||'#1B3254'};font-weight:600">${f2(i.qtyOpen)}</span></td>
       <td><span class="${qcls(t)}">${f2(t)}</span></td>
       <td>${fN(i.unitCost)>0?f$(i.unitCost):'—'}</td>
       <td>${v>0?`<span style="color:${p?.color};font-weight:600">${f$(v)}</span>`:'—'}</td>
-      <td style="font-size:12px;color:#6b7280">${i.lastCountedAt?fDT(i.lastCountedAt):'Never'}</td>
+      <td style="font-size:12px;color:#555d6b">${i.lastCountedAt?fDT(i.lastCountedAt):'Never'}</td>
       <td><div class="fr">
         <button class="btn btn-navy btn-sm" onclick="showAdjust('${i.id}')">Adjust</button>
         <button class="btn btn-sec btn-sm" onclick="showInvEdit('${i.id}')">Edit</button>
         <button class="btn btn-red btn-sm" onclick="delItem('${i.id}')">Delete</button>
       </div></td>
     </tr>`;
-  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#6b7280">No items match</td></tr>';
-  return `<div class="ph"><div class="pt">📦 Inventory <span style="font-size:14px;font-weight:400;color:#6b7280">Est. ${f$(totVal)}</span></div>
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:#555d6b">No items match</td></tr>';
+  return `<div class="ph"><div class="pt">📦 Inventory <span style="font-size:14px;font-weight:400;color:#555d6b">Est. ${f$(totVal)}</span></div>
     <button class="btn btn-navy" onclick="showInvAdd()">+ Add Product</button></div>
     <div class="card" style="padding:10px"><div class="fr filters">
       <span class="cam-wrap"><input class="inp" style="flex:1;max-width:220px" placeholder="Name / brand / UPC…" value="${esc(f.q)}" oninput="S.invFilt.q=this.value;setContent(pgInventory())"><button type="button" class="cam-btn sm" aria-label="Scan with camera" title="Scan with camera" onclick="DelcScan.near(this,{enter:false,title:'Find an item'})">📷</button></span>
@@ -741,7 +741,7 @@ async function saveInvEdit(id){
 function showAdjust(id){
   const i=S.inv.find(x=>x.id===id);if(!i)return;
   showModal(`Adjust — ${esc(i.name)}`,`
-    <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Current: <strong>New ${f2(i.qtyNew)}</strong> · <strong>Open ${f2(i.qtyOpen)}</strong> · Total ${f2(qtot(i))}</p>
+    <p style="color:#555d6b;font-size:13px;margin-bottom:12px">Current: <strong>New ${f2(i.qtyNew)}</strong> · <strong>Open ${f2(i.qtyOpen)}</strong> · Total ${f2(qtot(i))}</p>
     <div class="fg">
       <div class="full"><label class="lbl">Type</label><select id="m-at" class="sel"><option value="add">Add to</option><option value="remove">Remove from</option><option value="set">Set to</option></select></div>
       <div><label class="lbl">Qty New</label><input id="m-an" type="number" step="0.01" min="0" value="0" class="inp"></div>
@@ -781,7 +781,7 @@ function pgReceive(){
   const lineRows=S.recLines.map((l,idx)=>`
     <tr>
       <td>${l.isNew?'<span class="badge" style="background:#fef3c7;color:#92400e">NEW</span> ':''}
-        <strong>${esc(l.name||'(unnamed)')}</strong>${l.brand?` <span style="color:#6b7280">· ${esc(l.brand)}</span>`:''}
+        <strong>${esc(l.name||'(unnamed)')}</strong>${l.brand?` <span style="color:#555d6b">· ${esc(l.brand)}</span>`:''}
         ${l.isNew?`<div style="margin-top:4px;display:flex;gap:4px">
           <input class="inp" style="max-width:140px;padding:3px 6px;font-size:11px" value="${esc(l.name)}" placeholder="Product name" onchange="S.recLines[${idx}].name=this.value">
           <select class="sel" style="max-width:110px;padding:3px 6px;font-size:11px" onchange="S.recLines[${idx}].category=this.value">${getCatOpts(l.pantry,l.category)}</select>
@@ -796,10 +796,10 @@ function pgReceive(){
     <hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb">
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#6b7280">Product</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Qty New</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Qty Open</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Unit Cost</th>
+        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#555d6b">Product</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Qty New</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Qty Open</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Unit Cost</th>
         <th></th>
       </tr></thead>
       <tbody>${lineRows}</tbody>
@@ -808,7 +808,7 @@ function pgReceive(){
     <div class="fr" style="margin-top:10px">
       <button class="btn btn-navy" onclick="commitReceive()">✅ Commit Batch (${S.recLines.length} lines)</button>
       <button class="btn btn-sec" onclick="S.recLines=[];setContent(pgReceive())">Clear</button>
-    </div>`:'<p style="text-align:center;padding:18px 0;color:#6b7280;font-size:13px">Select a pantry then scan or search to add items</p>';
+    </div>`:'<p style="text-align:center;padding:18px 0;color:#555d6b;font-size:13px">Select a pantry then scan or search to add items</p>';
   return `<div class="ph"><div class="pt">📥 Receive Stock</div></div>
     <div class="card">
       <div style="margin-bottom:12px"><label class="lbl">Pantry</label><div class="fr">${pantryBtns}</div></div>
@@ -844,7 +844,7 @@ function showRecSearch(q){
   const el=document.getElementById('rec-drop');if(!el||!q.trim()){if(el)el.innerHTML='';return;}
   const pk=S.recPantry||'kitchen';
   const res=S.inv.filter(i=>i.pantry===pk&&(i.name.toLowerCase().includes(q.toLowerCase())||(i.brand||'').toLowerCase().includes(q.toLowerCase()))).slice(0,8);
-  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addRecItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#6b7280">${esc(i.brand)}</span>`:''}</span><span style="color:#6b7280;font-size:11px">${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#6b7280;font-size:13px">No matches</div>')+'</div>';
+  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addRecItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#555d6b">${esc(i.brand)}</span>`:''}</span><span style="color:#555d6b;font-size:11px">${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#555d6b;font-size:13px">No matches</div>')+'</div>';
 }
 
 function addRecItem(id){
@@ -887,9 +887,9 @@ function pgDispense(){
   const pkOpts=Object.entries(PANTRIES).map(([k,v])=>`<option value="${k}"${S.dspPantry===k?' selected':''}>${v.icon} ${v.label}</option>`).join('');
   const lineRows=S.dspLines.map((l,idx)=>`
     <tr>
-      <td><strong>${esc(l.name)}</strong>${l.brand?` <span style="color:#6b7280">· ${esc(l.brand)}</span>`:''}</td>
+      <td><strong>${esc(l.name)}</strong>${l.brand?` <span style="color:#555d6b">· ${esc(l.brand)}</span>`:''}</td>
       <td>${pbadge(l.pantry)}</td>
-      <td style="font-size:11px;color:#6b7280">New:${f2(l.qaN)} Open:${f2(l.qaO)}</td>
+      <td style="font-size:12px;color:#555d6b">New:${f2(l.qaN)} Open:${f2(l.qaO)}</td>
       <td><input type="number" step="0.01" min="0" class="inp" style="width:72px;padding:3px 6px" value="${l.qty}" onchange="S.dspLines[${idx}].qty=parseFloat(this.value)||0"></td>
       <td>${fN(l.qty)*fN(l.unitCost)>0?f$(fN(l.qty)*fN(l.unitCost)):'—'}</td>
       <td><button onclick="S.dspLines.splice(${idx},1);setContent(pgDispense())" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:16px">✕</button></td>
@@ -899,11 +899,11 @@ function pgDispense(){
     ${totCost>0?`<div style="text-align:right;font-weight:700;color:#1B3254;margin-bottom:6px">Est. Cost: ${f$(totCost)}</div>`:''}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#6b7280">Product</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Pantry</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Available</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Qty</th>
-        <th style="font-size:11px;padding:4px;color:#6b7280">Cost</th>
+        <th style="text-align:left;font-size:11px;padding:4px 6px;color:#555d6b">Product</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Pantry</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Available</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Qty</th>
+        <th style="font-size:11px;padding:4px;color:#555d6b">Cost</th>
         <th></th>
       </tr></thead>
       <tbody>${lineRows}</tbody>
@@ -921,7 +921,7 @@ function pgDispense(){
       </div>
       <span class="cam-wrap"><input class="inp" placeholder="Search products or scan UPC…" oninput="showDspSearch(this.value)" style="margin-bottom:4px" id="dsp-q" onkeydown="if(event.key==='Enter')dspUPC(this)"><button type="button" class="cam-btn" aria-label="Scan with camera" title="Scan with camera" onclick="DelcScan.near(this,{multi:true,title:'Dispense items'})">📷</button></span>
       <div id="dsp-drop"></div>
-      ${S.inv.some(i=>i.auditOnly)?'<p style="font-size:11px;color:#6b7280;margin-top:6px">ℹ️ Audit-only items excluded.</p>':''}
+      ${S.inv.some(i=>i.auditOnly)?'<p style="font-size:12px;color:#555d6b;margin-top:6px">ℹ️ Audit-only items excluded.</p>':''}
       ${linesSection}
     </div>`;
 }
@@ -929,7 +929,7 @@ function pgDispense(){
 function showDspSearch(q){
   const el=document.getElementById('dsp-drop');if(!el||!q.trim()){if(el)el.innerHTML='';return;}
   const res=S.inv.filter(i=>!i.auditOnly&&(!S.dspPantry||i.pantry===S.dspPantry)&&(i.name.toLowerCase().includes(q.toLowerCase())||(i.brand||'').toLowerCase().includes(q.toLowerCase())||(i.upc&&i.upc===q.trim()))).slice(0,8);
-  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addDspItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#6b7280">${esc(i.brand)}</span>`:''} ${pbadge(i.pantry)}</span><span style="color:#6b7280;font-size:11px">Stock:${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#6b7280;font-size:13px">No matches</div>')+'</div>';
+  el.innerHTML='<div class="sdrop">'+res.map(i=>`<div class="sdrop-item" onclick="addDspItem('${i.id}')"><span><strong>${esc(i.name)}</strong>${i.brand?` · <span style="color:#555d6b">${esc(i.brand)}</span>`:''} ${pbadge(i.pantry)}</span><span style="color:#555d6b;font-size:11px">Stock:${f2(qtot(i))}</span></div>`).join('')+(res.length?'':'<div style="padding:8px;color:#555d6b;font-size:13px">No matches</div>')+'</div>';
 }
 
 function dspUPC(el){
@@ -977,7 +977,7 @@ function pgEvents(){
   const cards=list.map(ev=>{
     const disps=S.dispenses.filter(d=>d.eventId===ev.id);
     const dv=evCost(ev.id);
-    const sc=EV_STATUS_CLR[ev.status]||'#6b7280';
+    const sc=EV_STATUS_CLR[ev.status]||'#555d6b';
     return `<div class="card" style="margin:0;display:flex;flex-direction:column;gap:6px">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
         <div style="font-weight:600;font-size:16px;letter-spacing:-.01em">${esc(ev.name)}</div>
@@ -1018,9 +1018,9 @@ function pgAudit(){
     const nN=c.n!==''?parseFloat(c.n):null,nO=c.o!==''?parseFloat(c.o):null;
     const vN=nN!==null?nN-fN(i.qtyNew):null,vO=nO!==null?nO-fN(i.qtyOpen):null;
     const pv=PANTRIES[i.pantry];
-    const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#6b7280':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
+    const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#555d6b':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
     return `<tr style="background:${(vN!==null&&vN!==0)||(vO!==null&&vO!==0)?'#fff5f5':''}">
-      <td><strong>${esc(i.name)}</strong>${i.brand?` <span style="color:#6b7280;font-size:11px">· ${esc(i.brand)}</span>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px;margin-left:4px">AUDIT ONLY</span>':''}</td>
+      <td><strong>${esc(i.name)}</strong>${i.brand?` <span style="color:#555d6b;font-size:11px">· ${esc(i.brand)}</span>`:''}${i.auditOnly?'<span class="badge" style="background:#e0e7ff;color:#3730a3;font-size:10px;margin-left:4px">AUDIT ONLY</span>':''}</td>
       <td>${pbadge(i.pantry)}</td>
       <td>${f2(i.qtyNew)}</td><td>${f2(i.qtyOpen)}</td>
       <td><input type="number" step="0.01" min="0" class="inp" style="width:78px;padding:3px 6px" value="${c.n}" placeholder="${f2(i.qtyNew)}" onchange="if(!S.auditCounts['${i.id}'])S.auditCounts['${i.id}']={n:'',o:''};S.auditCounts['${i.id}'].n=this.value;updateVar('${i.id}')"></td>
@@ -1035,7 +1035,7 @@ function pgAudit(){
       ${changed?`<button class="btn btn-navy" onclick="commitAudit()">✅ Commit (${changed})</button><button class="btn btn-sec" onclick="S.auditCounts={};setContent(pgAudit())">Reset</button>`:''}
     </div></div>
     ${modeBtns}
-    <p style="color:#6b7280;font-size:13px;margin-bottom:10px">Enter physical counts. Leave blank to keep current. Audit-only items can only be updated here.</p>
+    <p style="color:#555d6b;font-size:13px;margin-bottom:10px">Enter physical counts. Leave blank to keep current. Audit-only items can only be updated here.</p>
     <div style="overflow-x:auto"><table class="tbl">
       <thead><tr><th>Product</th><th>Pantry</th><th>Sys New</th><th>Sys Open</th><th>Count New</th><th>Count Open</th><th>Variance</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -1049,7 +1049,7 @@ function updateVar(id){
   const nN=c.n!==''?parseFloat(c.n):null,nO=c.o!==''?parseFloat(c.o):null;
   const vN=nN!==null?nN-fN(i.qtyNew):null,vO=nO!==null?nO-fN(i.qtyOpen):null;
   const pv=PANTRIES[i.pantry];
-  const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#6b7280':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
+  const vc=(v,lbl)=>v!==null?`<div style="font-size:11px">${lbl}: <span style="font-weight:700;color:${v===0?'#555d6b':v>0?pv?.color||'#1B3254':'#dc2626'}">${v>0?'+':''}${v.toFixed(2)}</span></div>`:'';
   el.innerHTML=vc(vN,'New')+vc(vO,'Open');
 }
 
@@ -1074,7 +1074,7 @@ async function commitAudit(){
 function setAuditMode(m){
   S.auditMode=m;
   if(m==='scan'){
-    setContent('<div style="text-align:center;padding:40px;color:#6b7280">Loading…</div>');
+    setContent('<div style="text-align:center;padding:40px;color:#555d6b">Loading…</div>');
     loadAuditScanSession();
   }else{
     setContent(pgAudit());
@@ -1179,7 +1179,7 @@ async function auditUndoLastScan(){
 
 function showAuditNewProductModal(upc,found){
   showModal(found?'Product Found — Confirm Details':'New Product — Enter Details',`
-    ${found?`<p style="color:#059669;font-size:12px;margin-bottom:8px">✅ Found via lookup. Confirm details, set pantry/category, then save.</p>`:`<p style="color:#6b7280;font-size:12px;margin-bottom:8px">UPC not found in any database. Enter details manually.</p>`}
+    ${found?`<p style="color:#059669;font-size:12px;margin-bottom:8px">✅ Found via lookup. Confirm details, set pantry/category, then save.</p>`:`<p style="color:#555d6b;font-size:12px;margin-bottom:8px">UPC not found in any database. Enter details manually.</p>`}
     <div class="fg">
       <div class="full"><label class="lbl">Product Name *</label><input id="m-name" class="inp" value="${esc(found?.name||'')}" placeholder="Required"></div>
       <div><label class="lbl">Brand</label><input id="m-brand" class="inp" value="${esc(found?.brand||'')}"></div>
@@ -1235,7 +1235,7 @@ function pgAuditScan(){
   if(!S.scanSession){
     return `<div class="card" style="max-width:480px">
       <div style="font-weight:700;color:#1B3254;margin-bottom:8px">Start a New Scan Count</div>
-      <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Scan each item as you count it, or scan once and type a quantity for a full case. This counts the sealed "New" quantity — Open quantity is untouched and can still be adjusted manually. Every scan saves as you go, so the count survives a closed tab and can be finished on another device.</p>
+      <p style="color:#555d6b;font-size:13px;margin-bottom:12px">Scan each item as you count it, or scan once and type a quantity for a full case. This counts the sealed "New" quantity — Open quantity is untouched and can still be adjusted manually. Every scan saves as you go, so the count survives a closed tab and can be finished on another device.</p>
       <label class="lbl">Counted By</label>
       <input id="aud-by" class="inp" style="margin-bottom:10px" value="${esc(S.scanCountedBy||'')}" placeholder="Volunteer name">
       <button class="btn btn-gold" onclick="startAuditSession()">▶️ Start Count</button>
@@ -1267,12 +1267,12 @@ function pgAuditScan(){
       <button class="btn btn-sm ${S.scanMode==='qty'?'btn-navy':'btn-sec'}" onclick="S.scanMode='qty';renderAudit()">🔢 Scan + Qty</button>
   </div>`;
   const flash=S.scanFlash?`<p style="color:#059669;font-weight:600;font-size:13px;margin-bottom:8px">✅ ${esc(S.scanFlash)}</p>`:'';
-  const rows=filtered.map(t=>`<tr><td><strong>${esc(t.item?.name||'Unknown')}</strong>${t.item?.brand?` <span style="color:#6b7280;font-size:11px">· ${esc(t.item.brand)}</span>`:''}</td><td>${t.item?pbadge(t.item.pantry):'—'}</td><td style="font-size:12px;color:#6b7280">${esc(t.item?.upc||'—')}</td><td>${f2(t.system)}</td><td style="font-weight:700">${f2(t.counted)}</td><td style="font-weight:700;color:${t.delta>0?'#1B3254':t.delta<0?'#dc2626':'#6b7280'}">${t.delta>0?'+':''}${t.delta.toFixed(2)}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:16px;color:#6b7280">Nothing scanned yet</td></tr>';
+  const rows=filtered.map(t=>`<tr><td><strong>${esc(t.item?.name||'Unknown')}</strong>${t.item?.brand?` <span style="color:#555d6b;font-size:11px">· ${esc(t.item.brand)}</span>`:''}</td><td>${t.item?pbadge(t.item.pantry):'—'}</td><td style="font-size:12px;color:#555d6b">${esc(t.item?.upc||'—')}</td><td>${f2(t.system)}</td><td style="font-weight:700">${f2(t.counted)}</td><td style="font-weight:700;color:${t.delta>0?'#1B3254':t.delta<0?'#dc2626':'#555d6b'}">${t.delta>0?'+':''}${t.delta.toFixed(2)}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:16px;color:#555d6b">Nothing scanned yet</td></tr>';
   return `<div class="card">
     <div class="ph">
       <div>
         <div style="font-weight:700;color:#1B3254">Count in progress</div>
-        <div style="font-size:12px;color:#6b7280">Started ${fD(S.scanSession.startedAt)}${S.scanSession.countedBy?' · '+esc(S.scanSession.countedBy):''} · ${touched.length} product(s), ${totalUnits.toFixed(2)} units scanned</div>
+        <div style="font-size:12px;color:#555d6b">Started ${fD(S.scanSession.startedAt)}${S.scanSession.countedBy?' · '+esc(S.scanSession.countedBy):''} · ${touched.length} product(s), ${totalUnits.toFixed(2)} units scanned</div>
       </div>
       <div class="fr">
         <button class="btn btn-sec btn-sm" onclick="refreshAuditScans()">🔄 Refresh</button>
@@ -1281,10 +1281,10 @@ function pgAuditScan(){
       </div>
     </div>
     ${modeToggle}
-    <p style="font-size:11px;color:#6b7280;margin-bottom:8px">${S.scanMode==='qty'?'Scan a barcode, then type the quantity and press Enter.':'Each scan adds 1 to the sealed (New) count. Re-scan the same barcode to keep counting more of it.'} Counts sealed/New quantity only — Open quantity is unaffected.</p>
+    <p style="font-size:12px;color:#555d6b;margin-bottom:8px">${S.scanMode==='qty'?'Scan a barcode, then type the quantity and press Enter.':'Each scan adds 1 to the sealed (New) count. Re-scan the same barcode to keep counting more of it.'} Counts sealed/New quantity only — Open quantity is unaffected.</p>
     ${scanBar}
     ${flash}
-    ${touched.length>0?`<div class="fr" style="margin-bottom:8px;justify-content:space-between"><span style="font-size:12px;color:#6b7280">Last scanned: <strong>${esc(S.scanScans[0]?(S.inv.find(i=>i.id===S.scanScans[0].itemId)?.name||'—'):'—')}</strong></span><button class="btn btn-sec btn-sm" onclick="auditUndoLastScan()">↩️ Undo Last Scan</button></div>`:''}
+    ${touched.length>0?`<div class="fr" style="margin-bottom:8px;justify-content:space-between"><span style="font-size:12px;color:#555d6b">Last scanned: <strong>${esc(S.scanScans[0]?(S.inv.find(i=>i.id===S.scanScans[0].itemId)?.name||'—'):'—')}</strong></span><button class="btn btn-sec btn-sm" onclick="auditUndoLastScan()">↩️ Undo Last Scan</button></div>`:''}
     <input class="inp" style="margin-bottom:8px" placeholder="Filter counted products…" value="${esc(S.scanSearch||'')}" oninput="S.scanSearch=this.value;setContent(pgAudit())">
     <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Product</th><th>Pantry</th><th>UPC</th><th>System New</th><th>Counted</th><th>Δ</th></tr></thead><tbody>${rows}</tbody></table></div>
   </div>`;
@@ -1356,7 +1356,7 @@ async function ncSaveEdit(id){
 
 function rptNotCountedBody(){
   if(S.ncLoading){
-    return '<div class="card" style="text-align:center;padding:30px;color:#6b7280">Loading…</div>';
+    return '<div class="card" style="text-align:center;padding:30px;color:#555d6b">Loading…</div>';
   }
   const rows=notCountedRows();
   const cutoffInputVal=S.ncCutoff||(S.latestSession?toLocalInputVal(S.latestSession.finalized_at):'');
@@ -1365,16 +1365,16 @@ function rptNotCountedBody(){
     const nVal=editing?editing.n:f2(i.qtyNew);
     const oVal=editing?editing.o:f2(i.qtyOpen);
     return `<tr>
-      <td><strong>${esc(i.name)}</strong>${i.brand?` <span style="color:#6b7280;font-size:11px">· ${esc(i.brand)}</span>`:''}</td>
+      <td><strong>${esc(i.name)}</strong>${i.brand?` <span style="color:#555d6b;font-size:11px">· ${esc(i.brand)}</span>`:''}</td>
       <td>${pbadge(i.pantry)}</td>
       <td>${esc(i.category)}</td>
       <td><span class="${qcls(qtot(i))}">${f2(qtot(i))}</span></td>
-      <td style="font-size:12px;color:#6b7280">${i.lastCountedAt?fDT(i.lastCountedAt):'Never'}</td>
+      <td style="font-size:12px;color:#555d6b">${i.lastCountedAt?fDT(i.lastCountedAt):'Never'}</td>
       <td><input type="number" step="0.01" min="0" class="inp" style="width:76px;padding:3px 6px" value="${nVal}" onchange="ncSetEdit('${i.id}','n',this.value)"></td>
       <td><input type="number" step="0.01" min="0" class="inp" style="width:76px;padding:3px 6px" value="${oVal}" onchange="ncSetEdit('${i.id}','o',this.value)"></td>
       <td><button class="btn btn-navy btn-sm" onclick="ncSaveEdit('${i.id}')">💾 Save</button></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:20px;color:#6b7280">🎉 Everything with a balance has been counted since the cutoff!</td></tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:20px;color:#555d6b">🎉 Everything with a balance has been counted since the cutoff!</td></tr>`;
 
   return `<div class="card" style="padding:10px;margin-bottom:12px">
       <div class="fr filters">
@@ -1382,10 +1382,10 @@ function rptNotCountedBody(){
         <input type="datetime-local" class="inp" style="max-width:220px" value="${cutoffInputVal}" onchange="S.ncCutoff=this.value;setContent(pgReports())">
         ${S.ncCutoff?`<button class="btn btn-sec btn-sm" onclick="S.ncCutoff='';setContent(pgReports())">Reset to Last Count</button>`:''}
         <button class="btn btn-sec btn-sm" onclick="S.latestSession=undefined;setRptTab('not-counted')">🔄 Refresh</button>
-        <span style="font-size:12px;color:#6b7280">${S.latestSession?'Last finalized count: '+fDT(S.latestSession.finalized_at):'No finalized counts yet'}</span>
+        <span style="font-size:12px;color:#555d6b">${S.latestSession?'Last finalized count: '+fDT(S.latestSession.finalized_at):'No finalized counts yet'}</span>
       </div>
     </div>
-    <p style="color:#6b7280;font-size:13px;margin-bottom:10px">Items with a balance that have not been counted since the cutoff above. Edit New/Open and click Save to record a current count — this also marks the item as counted just now.</p>
+    <p style="color:#555d6b;font-size:13px;margin-bottom:10px">Items with a balance that have not been counted since the cutoff above. Edit New/Open and click Save to record a current count — this also marks the item as counted just now.</p>
     <div style="overflow-x:auto"><table class="tbl">
       <thead><tr><th>Product</th><th>Pantry</th><th>Category</th><th>Total</th><th>Last Counted</th><th>New</th><th>Open</th><th></th></tr></thead>
       <tbody>${rowsHtml}</tbody>
@@ -1425,9 +1425,9 @@ function sessionTally(id){
 
 function renderSessionDetail(s){
   const scans=S.chScansBySession[s.id];
-  if(!scans)return'<p style="padding:10px 0;color:#6b7280;font-size:13px">Loading…</p>';
+  if(!scans)return'<p style="padding:10px 0;color:#555d6b;font-size:13px">Loading…</p>';
   const tally=sessionTally(s.id);
-  const rows=tally.map(t=>`<tr><td>${esc(t.name)}${t.brand?` <span style="color:#6b7280;font-size:11px">· ${esc(t.brand)}</span>`:''}</td><td>${t.pantry?pbadge(t.pantry):'—'}</td><td style="font-weight:700">${f2(t.qty)}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:#6b7280;padding:10px">No scans recorded</td></tr>';
+  const rows=tally.map(t=>`<tr><td>${esc(t.name)}${t.brand?` <span style="color:#555d6b;font-size:11px">· ${esc(t.brand)}</span>`:''}</td><td>${t.pantry?pbadge(t.pantry):'—'}</td><td style="font-weight:700">${f2(t.qty)}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:#555d6b;padding:10px">No scans recorded</td></tr>';
   return `<div style="margin-top:10px;border-top:1px solid #e5e7eb;padding-top:10px">
     <table class="tbl"><thead><tr><th>Product</th><th>Pantry</th><th>Counted Qty</th></tr></thead><tbody>${rows}</tbody></table>
   </div>`;
@@ -1435,11 +1435,11 @@ function renderSessionDetail(s){
 
 function rptCountHistoryBody(){
   if(S.chLoading){
-    return '<div class="card" style="text-align:center;padding:30px;color:#6b7280">Loading…</div>';
+    return '<div class="card" style="text-align:center;padding:30px;color:#555d6b">Loading…</div>';
   }
   const sessions=S.chSessions||[];
   if(!sessions.length){
-    return '<div class="card" style="text-align:center;padding:30px;color:#6b7280">No completed counts yet. Finalized and cancelled Scan Counts from the Audit page will show up here.</div>';
+    return '<div class="card" style="text-align:center;padding:30px;color:#555d6b">No completed counts yet. Finalized and cancelled Scan Counts from the Audit page will show up here.</div>';
   }
   return sessions.map(s=>{
     const expanded=S.chExpanded===s.id;
@@ -1451,7 +1451,7 @@ function rptCountHistoryBody(){
       <div class="ph" style="margin-bottom:0;cursor:pointer" onclick="toggleSessionDetail('${s.id}')">
         <div>
           <div style="font-weight:700;color:#1B3254">${fDT(s.started_at)} ${statusBadge}</div>
-          <div style="font-size:12px;color:#6b7280">${s.counted_by?'Counted by '+esc(s.counted_by):'Counted by —'}${s.finalized_at?' · Finalized '+fDT(s.finalized_at):''}</div>
+          <div style="font-size:12px;color:#555d6b">${s.counted_by?'Counted by '+esc(s.counted_by):'Counted by —'}${s.finalized_at?' · Finalized '+fDT(s.finalized_at):''}</div>
         </div>
         <button class="btn btn-sec btn-sm">${expanded?'▲ Hide':'▼ Details'}</button>
       </div>
@@ -1483,20 +1483,20 @@ function pgReports(){
     const rows=S.dispenses.filter(d=>(!f.event||d.eventId===f.event)&&(!f.op||d.operator===f.op)).slice().reverse().map(d=>{
       const v=d.lines.reduce((a,l)=>{const i=S.inv.find(x=>x.id===l.inventoryId);return a+fN(l.qty)*fN(i?.unitCost);},0);
       return `<tr><td>${fD(d.date)}</td><td>${esc(d.eventName||'—')}</td><td>${d.lines.length}</td><td>${v>0?f$(v):'—'}</td><td>${esc(d.operator)}</td><td>${esc(d.notes||'—')}</td></tr>`;
-    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:14px">None match</td></tr>';
+    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#555d6b;padding:14px">None match</td></tr>';
     tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Event</th><th>Items</th><th>Est. Cost</th><th>By</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
   }else if(tab==='receives'){
-    const rows=S.receives.filter(r=>(!f.pantry||r.pantry===f.pantry)&&(!f.op||r.operator===f.op)).slice().reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td><td>${esc(r.notes||'—')}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:14px">None match</td></tr>';
+    const rows=S.receives.filter(r=>(!f.pantry||r.pantry===f.pantry)&&(!f.op||r.operator===f.op)).slice().reverse().map(r=>`<tr><td>${fD(r.date)}</td><td>${pbadge(r.pantry)}</td><td>${r.lines.length}</td><td>${esc(r.operator)}</td><td>${esc(r.notes||'—')}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:#555d6b;padding:14px">None match</td></tr>';
     tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Pantry</th><th>Lines</th><th>By</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
   }else if(tab==='events'){
     const rows=S.events.slice().reverse().map(e=>{
       const ds=S.dispenses.filter(d=>d.eventId===e.id);
       const v=ds.reduce((a,d)=>a+d.lines.reduce((b,l)=>{const i=S.inv.find(x=>x.id===l.inventoryId);return b+fN(l.qty)*fN(i?.unitCost);},0),0);
       return `<tr><td><strong>${esc(e.name)}</strong></td><td>${e.date?fD(e.date+'T12:00:00'):'—'}</td><td>${esc(e.location||'—')}</td><td>${esc(e.attendees||'—')}</td><td>${ds.length}</td><td>${v>0?f$(v):'—'}</td></tr>`;
-    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:14px">No events</td></tr>';
+    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#555d6b;padding:14px">No events</td></tr>';
     tbl=`<table class="tbl"><thead><tr><th>Event</th><th>Date</th><th>Type</th><th>Guests</th><th>Dispenses</th><th>Est. Cost</th></tr></thead><tbody>${rows}</tbody></table>`;
   }else{
-    const rows=S.adjustments.slice().reverse().map(a=>`<tr><td>${fD(a.date)}</td><td>${esc(a.itemName)}</td><td>${esc(a.type)}</td><td>${f2(a.qtyNew)}${a.varNew!=null?` <span style="font-size:11px;color:${a.varNew>0?'#1B3254':a.varNew<0?'#dc2626':'#6b7280'}">(${a.varNew>0?'+':''}${f2(a.varNew)})</span>`:''}</td><td>${f2(a.qtyOpen)}${a.varOpen!=null?` <span style="font-size:11px;color:${a.varOpen>0?'#1B3254':a.varOpen<0?'#dc2626':'#6b7280'}">(${a.varOpen>0?'+':''}${f2(a.varOpen)})</span>`:''}</td><td>${esc(a.reason)}</td><td>${esc(a.operator)}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:14px">No adjustments</td></tr>';
+    const rows=S.adjustments.slice().reverse().map(a=>`<tr><td>${fD(a.date)}</td><td>${esc(a.itemName)}</td><td>${esc(a.type)}</td><td>${f2(a.qtyNew)}${a.varNew!=null?` <span style="font-size:11px;color:${a.varNew>0?'#1B3254':a.varNew<0?'#dc2626':'#555d6b'}">(${a.varNew>0?'+':''}${f2(a.varNew)})</span>`:''}</td><td>${f2(a.qtyOpen)}${a.varOpen!=null?` <span style="font-size:11px;color:${a.varOpen>0?'#1B3254':a.varOpen<0?'#dc2626':'#555d6b'}">(${a.varOpen>0?'+':''}${f2(a.varOpen)})</span>`:''}</td><td>${esc(a.reason)}</td><td>${esc(a.operator)}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#555d6b;padding:14px">No adjustments</td></tr>';
     tbl=`<table class="tbl"><thead><tr><th>Date</th><th>Item</th><th>Type</th><th>New Qty</th><th>Open Qty</th><th>Reason</th><th>By</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
   return `<div class="ph"><div class="pt">📋 Reports</div></div>
@@ -1522,23 +1522,23 @@ function pgSettings(){
           <button class="btn btn-navy" onclick="expJSON()">💾 Full Backup (JSON)</button>
           <button class="btn btn-sec" onclick="expCSV()">📊 Inventory CSV</button>
         </div>
-        <p style="font-size:11px;color:#6b7280;margin-top:10px">Downloads a file to your device.</p>
+        <p style="font-size:12px;color:#555d6b;margin-top:10px">Downloads a file to your device.</p>
       </div>
       <div class="card">
         <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📋 Import Inventory CSV</div>
         <button class="btn btn-gold" onclick="document.getElementById('csvf').click()">📋 Import from CSV</button>
         <input id="csvf" type="file" accept=".csv,.txt" style="display:none" onchange="impCSV(this)">
-        <p style="font-size:11px;color:#6b7280;margin-top:10px">Imports inventory from a CSV. Required column: Name. Optional: Brand, UPC, Pantry, Category, Qty New, Qty Open, Unit, Unit Cost, Notes.</p>
+        <p style="font-size:12px;color:#555d6b;margin-top:10px">Imports inventory from a CSV. Required column: Name. Optional: Brand, UPC, Pantry, Category, Qty New, Qty Open, Unit, Unit Cost, Notes.</p>
       </div>
       <div class="card">
         <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">🔄 Restore Backup</div>
         <button class="btn btn-sec" onclick="document.getElementById('jf').click()">📂 Restore from JSON</button>
         <input id="jf" type="file" accept=".json" style="display:none" onchange="impJSON(this)">
-        <p style="font-size:11px;color:#6b7280;margin-top:10px">⚠️ Overwrites all data in Supabase.</p>
+        <p style="font-size:12px;color:#555d6b;margin-top:10px">⚠️ Overwrites all data in Supabase.</p>
       </div>
       <div class="card" style="grid-column:1/-1">
         <div style="font-weight:700;font-size:15px;color:#1B3254;margin-bottom:10px">📊 Data Summary</div>
-        <div class="sgrid">${stats.map(([k,v])=>`<div style="background:#EEF1F7;border-radius:6px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#1B3254">${v}</div><div style="font-size:11px;color:#6b7280">${k}</div></div>`).join('')}</div>
+        <div class="sgrid">${stats.map(([k,v])=>`<div style="background:#EEF1F7;border-radius:6px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:700;color:#1B3254">${v}</div><div style="font-size:12px;color:#555d6b">${k}</div></div>`).join('')}</div>
       </div>
     </div>`;
 }
@@ -1631,7 +1631,7 @@ function showCSVPreview(rows){
       ${pantryVals.map(v=>`
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <span style="font-size:13px;min-width:160px;font-weight:600">${esc(v)}</span>
-          <span style="color:#6b7280">→</span>
+          <span style="color:#555d6b">→</span>
           <select class="sel" style="flex:1" onchange="window._csvPMap['${esc(v)}']=this.value">
             <option value="">— Select Pantry —</option>
             ${Object.entries(PANTRIES).map(([k,p])=>`<option value="${k}"${window._csvPMap[v]===k?' selected':''}>${p.icon} ${p.label}</option>`).join('')}
@@ -1644,7 +1644,7 @@ function showCSVPreview(rows){
     <tr>
       <td>${esc(r.name||'—')}</td>
       <td>${esc(r.brand||'—')}</td>
-      <td style="font-family:monospace;font-size:11px;color:#6b7280">${esc(r.upc||'—')}</td>
+      <td style="font-family:monospace;font-size:12px;color:#555d6b">${esc(r.upc||'—')}</td>
       <td>${esc(r.pantry||r.pantry_label||'—')}</td>
       <td>${esc(r.category||'—')}</td>
       <td>${esc(r.qty_new||r.qty||'0')}</td>
@@ -1660,7 +1660,7 @@ function showCSVPreview(rows){
         <thead><tr><th>Name</th><th>Brand</th><th>UPC</th><th>Pantry</th><th>Category</th><th>Qty New</th><th>Qty Open</th><th>Unit Cost</th></tr></thead>
         <tbody>${preview}</tbody>
       </table>
-      ${rows.length>15?`<p style="font-size:11px;color:#6b7280;padding:6px 0">…and ${rows.length-15} more rows</p>`:''}
+      ${rows.length>15?`<p style="font-size:12px;color:#555d6b;padding:6px 0">…and ${rows.length-15} more rows</p>`:''}
     </div>
     <div>
       <label class="lbl">Import Mode</label>
