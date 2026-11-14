@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>delcPANTRY</title>
 <meta name="theme-color" content="#1B3254">
-<script src="https://delcdata.github.io/DELCAppsHub/delc-kit.js?v=1"></script>
+<script src="https://delcdata.github.io/DELCAppsHub/delc-kit.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -154,6 +154,15 @@ input[type=checkbox]{accent-color:var(--navy);width:18px;height:18px}
 #say-ov .say{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:left}
 @media(max-width:700px){.card{max-width:calc(100vw - 32px);overflow-x:auto}}
 #say-ov .say-m{white-space:pre-wrap;font-size:15px;line-height:1.45;color:var(--label);max-height:55vh;overflow:auto;margin-bottom:16px}
+
+/* shared header buttons (2026-11-14) — same look in every delcAPP; delc-kit.js carries the full rule, this is the fallback */
+.delc-hbtn{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:8px;padding:5px 11px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;cursor:pointer}.delc-hbtn.pri{background:#fff;color:#1B3254}
+/* one header layout in every delcAPP: name and buttons on the first row, tabs on a second row; solid navy; no gold */
+#nav{background:#1B3254!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;flex-wrap:wrap!important;overflow:visible!important;row-gap:6px;column-gap:6px}
+#nav .brand{margin-right:0}#nav .brand .delc-wm{font-size:19px}#nav .nspacer{flex:1}
+#nav .navtabs{order:20;flex:1 0 100%;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0}#nav .navtabs::-webkit-scrollbar{display:none}#nav .navtabs .nb{flex-shrink:0}
+#nav .nuser .avatar{display:none}#nav .nuser .un{color:#fff;opacity:.85;font-size:13px}
+@media(max-width:480px){#nav{padding-left:12px!important;padding-right:12px!important}}
 </style>
 <script src="https://delcdata.github.io/DELCAppsHub/shared-auth.js"></script>
 </head>
@@ -497,11 +506,11 @@ const navIcon=id=>`<svg viewBox="0 0 24 24" aria-hidden="true">${NAV_ICONS[id]||
 function renderNav(){
   const el=document.getElementById('nav'); if(!el) return;
   el.innerHTML=`<span class="brand"><span class="delc-wm">delc<b>PANTRY</b></span></span>`+
-    PAGES.map(p=>`<button class="nb${S.page===p.id?' active':''}" onclick="nav('${p.id}')">${navIcon(p.id)}${p.label}</button>`).join('')+
     `<span class="nspacer"></span>
      <span class="nuser"><span class="avatar">${esc(String(S.opName||S.op||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2))}</span><span class="un">${esc(S.opName||S.op)}</span></span>
-     <a class="nav-apps" href="https://delcdata.github.io/DELCAppsHub/" title="Back to the DELC Apps Hub">Apps</a>
-     <button class="nb out" style="margin-left:6px" onclick="doLogout()">Sign out</button>`;
+     <a class="nav-apps delc-hbtn" href="https://delcdata.github.io/DELCAppsHub/" title="Back to the DELC Apps Hub">Apps</a>
+     <button class="nb out delc-hbtn" onclick="doLogout()">Sign out</button>
+     <div class="navtabs">`+PAGES.map(p=>`<button class="nb${S.page===p.id?' active':''}" onclick="nav('${p.id}')">${navIcon(p.id)}${p.label}</button>`).join('')+`</div>`;
   const a=el.querySelector('.nb.active'); if(a&&a.scrollIntoView) a.scrollIntoView({block:'nearest',inline:'center'});
 }
 
